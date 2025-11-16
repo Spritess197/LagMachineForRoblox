@@ -9,18 +9,15 @@ local Workspace = game:GetService("Workspace")
 local LagEnabled = false
 local lagIntensity = 1
 
--- Ждем пока PlayerGui будет доступен
-local playerGui = player:WaitForChild("PlayerGui")
-
--- GUI
+-- GUI (старый рабочий вариант)
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MaxLagGUI"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Parent = playerGui
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainContainer = Instance.new("Frame")
-mainContainer.Size = UDim2.new(0, 350, 0, 250)
+mainContainer.Size = UDim2.new(0, 320, 0, 200)
 mainContainer.Position = UDim2.new(0, 400, 0, 20)
 mainContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainContainer.BackgroundTransparency = 0.1
@@ -74,7 +71,7 @@ content.BackgroundTransparency = 1
 content.Parent = mainContainer
 
 local lagSection = Instance.new("Frame")
-lagSection.Size = UDim2.new(1, 0, 0, 150)
+lagSection.Size = UDim2.new(1, 0, 0, 120)
 lagSection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 lagSection.BorderSizePixel = 0
 lagSection.Parent = content
@@ -86,7 +83,7 @@ sectionCorner.Parent = lagSection
 local lagTitle = Instance.new("TextLabel")
 lagTitle.Size = UDim2.new(1, -10, 0, 25)
 lagTitle.Position = UDim2.new(0, 10, 0, 5)
-lagTitle.Text = "ALL METHODS COMBINED"
+lagTitle.Text = "All Methods Combined"
 lagTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 lagTitle.BackgroundTransparency = 1
 lagTitle.TextSize = 12
@@ -95,9 +92,9 @@ lagTitle.TextXAlignment = Enum.TextXAlignment.Left
 lagTitle.Parent = lagSection
 
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -10, 0, 80)
+statusLabel.Size = UDim2.new(1, -10, 0, 60)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nIntensity: LOW\nFPS: --\nMethods: ALL"
+statusLabel.Text = "Status: DISABLED\nIntensity: LOW\nFPS: --"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -106,14 +103,14 @@ statusLabel.TextWrapped = true
 statusLabel.Parent = lagSection
 
 local actionsFrame = Instance.new("Frame")
-actionsFrame.Size = UDim2.new(1, 0, 0, 50)
-actionsFrame.Position = UDim2.new(0, 0, 0, 160)
+actionsFrame.Size = UDim2.new(1, 0, 0, 40)
+actionsFrame.Position = UDim2.new(0, 0, 0, 130)
 actionsFrame.BackgroundTransparency = 1
 actionsFrame.Parent = content
 
-local function createActionButton(xPosition, text, color, sizeX)
+local function createActionButton(xPosition, text, color)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(sizeX or 0.48, 0, 0, 35)
+    btn.Size = UDim2.new(0.48, 0, 0, 35)
     btn.Position = UDim2.new(xPosition, 0, 0, 0)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -132,29 +129,21 @@ end
 
 local toggleBtn = createActionButton(0, "ULTIMATE LAG ON", Color3.fromRGB(200, 60, 60))
 local intensityBtn = createActionButton(0.52, "INTENSITY: LOW", Color3.fromRGB(80, 120, 200))
-local infoBtn = createActionButton(0, "ALL METHODS ACTIVE", Color3.fromRGB(120, 80, 200), 1)
-
-infoBtn.Position = UDim2.new(0, 0, 0, 40)
 
 -- Функции для кнопок
 local function setupButtonHover(button)
     local originalColor = button.BackgroundColor3
     button.MouseEnter:Connect(function()
-        pcall(function()
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor * 1.2}):Play()
-        end)
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor * 1.2}):Play()
     end)
     button.MouseLeave:Connect(function()
-        pcall(function()
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
-        end)
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
     end)
 end
 
 setupButtonHover(closeBtn)
 setupButtonHover(toggleBtn)
 setupButtonHover(intensityBtn)
-setupButtonHover(infoBtn)
 
 local scriptRunning = true
 local connections = {}
@@ -165,20 +154,20 @@ local function closeGUI()
     scriptRunning = false
     -- Отключаем все соединения
     for _, conn in pairs(connections) do
-        pcall(function() conn:Disconnect() end)
+        conn:Disconnect()
     end
     -- Очищаем все объекты
     for _, part in pairs(physicsParts) do
         if part and part.Parent then
-            pcall(function() part:Destroy() end)
+            part:Destroy()
         end
     end
     for _, part in pairs(createdParts) do
         if part and part.Parent then
-            pcall(function() part:Destroy() end)
+            part:Destroy()
         end
     end
-    pcall(function() screenGui:Destroy() end)
+    screenGui:Destroy()
 end
 
 closeBtn.MouseButton1Click:Connect(closeGUI)
@@ -634,3 +623,4 @@ print("   🧩 Mass Object Creation")
 print("   ✨ Particle Effects")
 print("🎚️ 4 Intensity levels up to EXTREME!")
 print("⚠️ WARNING: Will cause MAJOR FPS drops!")
+
