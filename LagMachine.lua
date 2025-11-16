@@ -1,4 +1,4 @@
--- ULTIMATE SERVER LAG (All Methods Combined)
+-- ULTIMATE SERVER LAG (All Methods Combined - No Reset)
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -14,8 +14,6 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MaxLagGUI"
 screenGui.ResetOnSpawn = false  -- ВАЖНО: отключаем сброс при респавне
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- Помещаем GUI в StarterGui чтобы он восстанавливался после респавна
 screenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
 local mainContainer = Instance.new("Frame")
@@ -152,39 +150,12 @@ local lagConnection = nil
 local physicsParts = {}
 local createdParts = {}
 
--- Функция для восстановления GUI после респавна
-local function ensureGUI()
-    if not screenGui or not screenGui.Parent then
-        -- Пересоздаем GUI если он был удален
-        screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "MaxLagGUI"
-        screenGui.ResetOnSpawn = false
-        screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        screenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-        
-        -- Пересоздаем все элементы GUI...
-        -- [здесь должен быть код пересоздания всех элементов GUI]
-        -- Но для простоты просто вернем существующий GUI
-    end
-    return screenGui
-end
-
 local function closeGUI()
     scriptRunning = false
     if lagConnection then
         lagConnection:Disconnect()
     end
-    -- Очищаем все объекты
-    for _, part in pairs(physicsParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
-    end
-    for _, part in pairs(createdParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
-    end
+    -- НЕ очищаем объекты при закрытии GUI - они остаются в игре
     if screenGui then
         screenGui:Destroy()
     end
@@ -222,10 +193,10 @@ end)
 
 -- УЛЬТИМАТИВНЫЙ МЕТОД: ВСЕ 4 МЕТОДА ВМЕСТЕ
 local function startUltimateLag()
-    -- Создаем физические части один раз
+    -- Создаем физические части один раз (они останутся навсегда)
     for i = 1, lagIntensity * 15 do
         local part = Instance.new("Part")
-        part.Name = "PhysicsPart_" .. i
+        part.Name = "PermanentPhysicsPart_" .. i
         part.Size = Vector3.new(1.5, 1.5, 1.5)
         part.Position = Vector3.new(
             math.random(-30, 30),
@@ -296,14 +267,14 @@ local function startUltimateLag()
         Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
         Lighting.FogColor = Color3.new(math.random(), math.random(), math.random())
         
-        -- Создание источников света
+        -- Создание источников света (они остаются навсегда)
         for i = 1, lightMultiplier do
             local pointLight = Instance.new("PointLight")
             pointLight.Brightness = math.random(3, 15)
             pointLight.Range = math.random(8, 25)
             pointLight.Color = Color3.new(math.random(), math.random(), math.random())
             pointLight.Parent = workspace.Terrain
-            game:GetService("Debris"):AddItem(pointLight, 0.3)
+            -- УБИРАЕМ Debris - свет остается навсегда
         end
         
         -- Эффекты пост-обработки
@@ -333,6 +304,7 @@ local function startUltimateLag()
         
         for i = 1, objectMultiplier do
             local part = Instance.new("Part")
+            part.Name = "PermanentLagPart_" .. i
             part.Size = Vector3.new(
                 math.random(0.5, 2),
                 math.random(0.5, 2),
@@ -357,13 +329,14 @@ local function startUltimateLag()
             
             part.Parent = workspace
             table.insert(createdParts, part)
-            game:GetService("Debris"):AddItem(part, 0.4)
+            -- УБИРАЕМ Debris - объекты остаются навсегда
         end
         
         -- === ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ ===
-        -- Создание партиклов
+        -- Создание партиклов (они тоже остаются)
         for i = 1, math.min(3, lagIntensity) do
             local particle = Instance.new("Part")
+            particle.Name = "PermanentParticle_" .. i
             particle.Size = Vector3.new(0.2, 0.2, 0.2)
             particle.Position = Vector3.new(
                 math.random(-10, 10),
@@ -375,7 +348,7 @@ local function startUltimateLag()
             particle.Material = Enum.Material.Neon
             particle.BrickColor = BrickColor.random()
             particle.Parent = workspace
-            game:GetService("Debris"):AddItem(particle, 0.2)
+            -- УБИРАЕМ Debris - партиклы остаются навсегда
         end
         
         -- Дополнительные вычисления
@@ -388,25 +361,12 @@ local function startUltimateLag()
     end)
 end
 
--- Очистка всего
+-- Очистка всего (теперь не используется)
 local function cleanupAll()
     if lagConnection then
         lagConnection:Disconnect()
     end
-    
-    -- Удаляем все созданные части
-    for _, part in pairs(physicsParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
-    end
-    for _, part in pairs(createdParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
-    end
-    physicsParts = {}
-    createdParts = {}
+    -- НЕ удаляем объекты - они остаются в игре навсегда
 end
 
 -- Переключение интенсивности
@@ -446,14 +406,18 @@ toggleBtn.MouseButton1Click:Connect(function()
         startUltimateLag()
         print("💥💥💥 ULTIMATE LAG ACTIVATED! Intensity: " .. lagIntensity)
         print("⚡ Running ALL 4 methods simultaneously!")
+        print("🔒 All objects are PERMANENT and won't be removed!")
     else
         statusLabel.Text = string.format("Status: DISABLED\nIntensity: %s\nFPS: NORMAL", 
             lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME")
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         toggleBtn.Text = "ULTIMATE LAG ON"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-        cleanupAll()
-        print("🛑 Ultimate lag stopped")
+        -- НЕ очищаем объекты при выключении - они остаются!
+        if lagConnection then
+            lagConnection:Disconnect()
+        end
+        print("🛑 Ultimate lag stopped (objects remain in game)")
     end
 end)
 
@@ -477,7 +441,10 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             toggleBtn.Text = "ULTIMATE LAG ON"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-            cleanupAll()
+            -- НЕ очищаем объекты при выключении
+            if lagConnection then
+                lagConnection:Disconnect()
+            end
         end
     end
 end)
@@ -504,21 +471,7 @@ spawn(function()
     end
 end)
 
--- Автоочистка каждые 15 секунд
-spawn(function()
-    while scriptRunning do
-        if LagEnabled then
-            for i = #createdParts, 1, -1 do
-                if not createdParts[i] or not createdParts[i].Parent then
-                    table.remove(createdParts, i)
-                end
-            end
-        end
-        wait(15)
-    end
-end)
-
--- Восстановление GUI после респавна
+-- Восстановление GUI после респавна (но объекты остаются)
 player.CharacterAdded:Connect(function()
     wait(1) -- Ждем немного после респавна
     if not screenGui or not screenGui.Parent then
@@ -534,13 +487,15 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- При респавне НЕ делаем ничего - объекты остаются
 player.CharacterRemoving:Connect(function()
-    -- Не закрываем GUI при респавне, только очищаем объекты
-    cleanupAll()
+    -- АБСОЛЮТНО НИЧЕГО не делаем при респавне
+    -- Все объекты остаются в игре навсегда
 end)
 
-print("💥💥💥 ULTIMATE ALL-IN-ONE LAG LOADED!")
-print("🎮 GUI should persist after respawn!")
+print("💥💥💥 ULTIMATE PERMANENT LAG LOADED!")
+print("🎮 GUI persists after respawn!")
+print("🎮 Objects remain FOREVER in game!")
 print("🎮 Click ULTIMATE LAG ON or press L to start")
 print("⚡ ALL 4 METHODS COMBINED:")
 print("   🔥 Extreme Calculations (3-level loops)")
@@ -548,3 +503,4 @@ print("   💡 Maximum Lighting effects")
 print("   🔷 Intensive Physics with BodyVelocity")
 print("   🧩 Mass Object Creation")
 print("🎚️ 4 Intensity levels up to EXTREME!")
+print("🔒 PERMANENT: All objects stay in game forever!")
