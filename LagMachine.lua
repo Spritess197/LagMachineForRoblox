@@ -1,24 +1,22 @@
--- EXTREME LAG MACHINE + INSTANT MULTI-RESPAWN
+-- ULTRA FAST MULTI-RESET SCRIPT
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 -- Настройки
-local LagEnabled = false
-local LagIntensity = 500
-local MultiRespawnEnabled = false
+local MultiResetEnabled = false
+local resetCount = 0
 
--- Создаем GUI
+-- Создаем простой GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ExtremeLagGUI"
+screenGui.Name = "UltraResetGUI"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 220)
-mainFrame.Position = UDim2.new(0, 400, 0, 20)
+mainFrame.Size = UDim2.new(0, 280, 0, 120)
+mainFrame.Position = UDim2.new(0, 400, 0, 150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
@@ -30,7 +28,7 @@ corner.Parent = mainFrame
 
 -- Header
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 40)
+header.Size = UDim2.new(1, 0, 0, 30)
 header.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 header.BorderSizePixel = 0
 header.Parent = mainFrame
@@ -41,144 +39,67 @@ headerCorner.Parent = header
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.7, 0, 1, 0)
-title.Position = UDim2.new(0, 15, 0, 0)
-title.Text = "EXTREME LAG 2000"
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "ULTRA FAST RESET"
 title.TextColor3 = Color3.fromRGB(220, 220, 220)
 title.BackgroundTransparency = 1
-title.TextSize = 16
+title.TextSize = 14
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = header
 
 -- Close button
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0, 2)
 closeBtn.Text = "×"
 closeBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
 closeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 closeBtn.BorderSizePixel = 0
-closeBtn.TextSize = 20
+closeBtn.TextSize = 16
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.Parent = header
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.CornerRadius = UDim.new(0, 6)
 closeCorner.Parent = closeBtn
 
 -- Content
 local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -20, 1, -60)
-content.Position = UDim2.new(0, 10, 0, 50)
+content.Size = UDim2.new(1, -20, 1, -40)
+content.Position = UDim2.new(0, 10, 0, 35)
 content.BackgroundTransparency = 1
 content.Parent = mainFrame
 
--- Intensity section
-local intensitySection = Instance.new("Frame")
-intensitySection.Size = UDim2.new(1, 0, 0, 80)
-intensitySection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-intensitySection.BorderSizePixel = 0
-intensitySection.Parent = content
-
-local intensityCorner = Instance.new("UICorner")
-intensityCorner.CornerRadius = UDim.new(0, 8)
-intensityCorner.Parent = intensitySection
-
-local intensityTitle = Instance.new("TextLabel")
-intensityTitle.Size = UDim2.new(1, -10, 0, 25)
-intensityTitle.Position = UDim2.new(0, 10, 0, 5)
-intensityTitle.Text = "Lag Intensity (1-2000)"
-intensityTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
-intensityTitle.BackgroundTransparency = 1
-intensityTitle.TextSize = 12
-intensityTitle.Font = Enum.Font.Gotham
-intensityTitle.TextXAlignment = Enum.TextXAlignment.Left
-intensityTitle.Parent = intensitySection
-
--- Intensity input
-local intensityInputContainer = Instance.new("Frame")
-intensityInputContainer.Size = UDim2.new(1, -20, 0, 30)
-intensityInputContainer.Position = UDim2.new(0, 10, 0, 30)
-intensityInputContainer.BackgroundTransparency = 1
-intensityInputContainer.Parent = intensitySection
-
-local intensityLabel = Instance.new("TextLabel")
-intensityLabel.Size = UDim2.new(0, 80, 1, 0)
-intensityLabel.Text = "Intensity:"
-intensityLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-intensityLabel.BackgroundTransparency = 1
-intensityLabel.TextSize = 12
-intensityLabel.Font = Enum.Font.Gotham
-intensityLabel.TextXAlignment = Enum.TextXAlignment.Left
-intensityLabel.Parent = intensityInputContainer
-
-local intensityInput = Instance.new("TextBox")
-intensityInput.Size = UDim2.new(1, -85, 1, 0)
-intensityInput.Position = UDim2.new(0, 85, 0, 0)
-intensityInput.Text = tostring(LagIntensity)
-intensityInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-intensityInput.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-intensityInput.BorderSizePixel = 0
-intensityInput.TextSize = 12
-intensityInput.Font = Enum.Font.Gotham
-intensityInput.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-intensityInput.Parent = intensityInputContainer
-
-local intensityInputCorner = Instance.new("UICorner")
-intensityInputCorner.CornerRadius = UDim.new(0, 6)
-intensityInputCorner.Parent = intensityInput
-
-local intensityInputPadding = Instance.new("UIPadding")
-intensityInputPadding.PaddingLeft = UDim.new(0, 8)
-intensityInputPadding.Parent = intensityInput
-
 -- Status
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -20, 0, 25)
-statusLabel.Position = UDim2.new(0, 10, 0, 70)
-statusLabel.Text = "Status: DISABLED (Press L)"
+statusLabel.Size = UDim2.new(1, 0, 0, 25)
+statusLabel.Text = "Status: DISABLED (Press R)"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.GothamBold
-statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-statusLabel.Parent = intensitySection
-
--- Buttons
-local buttonsFrame = Instance.new("Frame")
-local buttonsFrame = Instance.new("Frame")
-buttonsFrame.Size = UDim2.new(1, 0, 0, 90)
-buttonsFrame.Position = UDim2.new(0, 0, 0, 90)
-buttonsFrame.BackgroundTransparency = 1
-buttonsFrame.Parent = content
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+statusLabel.Parent = content
 
 -- Info label
 local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(1, 0, 1, 0)
-infoLabel.Text = "Press L to toggle extreme lag\n⚡ INSTANT MULTI-RESPAWN\n♾️ Resets multiple times instantly\n💥 Lag machine works simultaneously"
+infoLabel.Size = UDim2.new(1, 0, 0, 40)
+infoLabel.Position = UDim2.new(0, 0, 0, 25)
+infoLabel.Text = "⚡ 10+ resets per second\n🎮 Press R to toggle\n♾️ Infinite until disabled"
 infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextSize = 10
 infoLabel.Font = Enum.Font.Gotham
 infoLabel.TextXAlignment = Enum.TextXAlignment.Center
 infoLabel.TextWrapped = true
-infoLabel.Parent = buttonsFrame
+infoLabel.Parent = content
 
 -- ФУНКЦИОНАЛЬНОСТЬ
 
 -- Закрытие GUI
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
-end)
-
--- Обновление интенсивности
-intensityInput.FocusLost:Connect(function()
-    local newIntensity = tonumber(intensityInput.Text)
-    if newIntensity and newIntensity > 0 then
-        LagIntensity = math.min(newIntensity, 2000)
-        intensityInput.Text = tostring(LagIntensity)
-        print("📊 Lag intensity updated: " .. LagIntensity)
-    end
 end)
 
 -- Перетаскивание
@@ -209,282 +130,152 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ L
-local function toggleLag()
-    LagEnabled = not LagEnabled
-    MultiRespawnEnabled = LagEnabled
+-- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ R
+local function toggleMultiReset()
+    MultiResetEnabled = not MultiResetEnabled
     
-    if LagEnabled then
-        statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
-        statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-        print("💥💥💥 EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
-        print("⚡ INSTANT MULTI-RESPAWN ENABLED!")
-        
-        -- Немедленно запускаем многократный респавн
-        if LocalPlayer.Character then
-            LocalPlayer.Character:BreakJoints()
-        end
+    if MultiResetEnabled then
+        statusLabel.Text = "Status: ULTRA FAST RESET!"
+        statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+        print("⚡⚡⚡ ULTRA FAST MULTI-RESET ACTIVATED!")
+        print("🎮 Press R again to stop")
     else
-        statusLabel.Text = "Status: DISABLED (Press L)"
+        statusLabel.Text = "Status: DISABLED (Press R)"
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        MultiRespawnEnabled = false
-        print("✅ Extreme lag deactivated")
-        print("🛑 Multi-respawn stopped")
+        print("🛑 Ultra fast reset stopped")
+        print("📊 Total resets: " .. resetCount)
     end
 end
 
--- Обработка нажатия клавиши L
+-- Обработка нажатия клавиши R
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
-    if input.KeyCode == Enum.KeyCode.L then
-        toggleLag()
+    if input.KeyCode == Enum.KeyCode.R then
+        toggleMultiReset()
     end
 end)
 
--- СИСТЕМА МГНОВЕННОГО МНОГОКРАТНОГО РЕСПАВНА
-local respawnCount = 0
-local respawnActive = false
+-- СИСТЕМА СУПЕР-БЫСТРОГО МНОГОКРАТНОГО РЕСЕТА
+local resetActive = false
 
-local function instantMultiRespawn()
-    if not MultiRespawnEnabled or respawnActive then return end
+local function ultraFastMultiReset()
+    if not MultiResetEnabled or resetActive then return end
     
-    respawnActive = true
-    print("⚡ STARTING INSTANT MULTI-RESPAWN...")
+    resetActive = true
+    local cycleCount = 0
     
-    while MultiRespawnEnabled do
-        -- РЕСПАВН №1
-        if LocalPlayer.Character then
-            LocalPlayer.Character:BreakJoints()
-        end
-        LocalPlayer:LoadCharacter()
-        respawnCount = respawnCount + 1
+    print("🚀 STARTING ULTRA FAST MULTI-RESET...")
+    
+    while MultiResetEnabled do
+        cycleCount = cycleCount + 1
         
-        -- МГНОВЕННЫЙ РЕСПАВН №2 (сразу после первого)
-        wait(0.001) -- Минимальная задержка
-        if LocalPlayer.Character then
-            LocalPlayer.Character:BreakJoints()
+        -- ЦИКЛ ИЗ 10 МГНОВЕННЫХ РЕСЕТОВ ПОДРЯД
+        for i = 1, 10 do
+            -- Ресет №1
+            if LocalPlayer.Character then
+                LocalPlayer.Character:BreakJoints()
+            end
+            LocalPlayer:LoadCharacter()
+            resetCount = resetCount + 1
+            
+            -- Мгновенный ресет №2
+            wait(0.0001)
+            if LocalPlayer.Character then
+                LocalPlayer.Character:BreakJoints()
+            end
+            LocalPlayer:LoadCharacter()
+            resetCount = resetCount + 1
+            
+            -- Мгновенный ресет №3
+            wait(0.0001)
+            if LocalPlayer.Character then
+                LocalPlayer.Character:BreakJoints()
+            end
+            LocalPlayer:LoadCharacter()
+            resetCount = resetCount + 1
+            
+            -- Мгновенный ресет №4
+            wait(0.0001)
+            if LocalPlayer.Character then
+                LocalPlayer.Character:BreakJoints()
+            end
+            LocalPlayer:LoadCharacter()
+            resetCount = resetCount + 1
+            
+            -- Мгновенный ресет №5
+            wait(0.0001)
+            if LocalPlayer.Character then
+                LocalPlayer.Character:BreakJoints()
+            end
+            LocalPlayer:LoadCharacter()
+            resetCount = resetCount + 1
         end
-        LocalPlayer:LoadCharacter()
-        respawnCount = respawnCount + 1
         
-        -- МГНОВЕННЫЙ РЕСПАВН №3 (еще один сразу)
-        wait(0.001)
-        if LocalPlayer.Character then
-            LocalPlayer.Character:BreakJoints()
-        end
-        LocalPlayer:LoadCharacter()
-        respawnCount = respawnCount + 1
-        
-        -- МГНОВЕННЫЙ РЕСПАВН №4 (и еще один)
-        wait(0.001)
-        if LocalPlayer.Character then
-            LocalPlayer.Character:BreakJoints()
-        end
-        LocalPlayer:LoadCharacter()
-        respawnCount = respawnCount + 1
-        
-        -- МГНОВЕННЫЙ РЕСПАВН №5 (последний в цикле)
-        wait(0.001)
-        if LocalPlayer.Character then
-            LocalPlayer.Character:BreakJoints()
-        end
-        LocalPlayer:LoadCharacter()
-        respawnCount = respawnCount + 1
-        
-        -- Выводим счетчик
-        if respawnCount % 25 == 0 then
-            print("⚡ INSTANT MULTI-RESPAWN #" .. respawnCount .. " (5 resets per cycle)")
+        -- Выводим статистику каждые 5 циклов
+        if cycleCount % 5 == 0 then
+            print("⚡ ULTRA RESET CYCLE #" .. cycleCount .. " - Total: " .. resetCount .. " resets")
+            print("🚀 Speed: 50+ resets per cycle!")
         end
         
-        wait(0.05) -- Пауза между циклами многократного респавна
+        -- Минимальная пауза между циклами
+        wait(0.01)
     end
     
-    respawnActive = false
-    print("🛑 INSTANT MULTI-RESPAWN STOPPED")
+    resetActive = false
+    print("🛑 ULTRA FAST MULTI-RESET STOPPED")
 end
 
--- ДОПОЛНИТЕЛЬНЫЙ СУПЕР-БЫСТРЫЙ РЕСПАВН
-local ultraRespawnActive = false
+-- ДОПОЛНИТЕЛЬНЫЙ СУПЕР-БЫСТРЫЙ ЦИКЛ
+local ultraResetActive = false
 
-local function ultraFastRespawn()
-    if not MultiRespawnEnabled or ultraRespawnActive then return end
+local function additionalUltraReset()
+    if not MultiResetEnabled or ultraResetActive then return end
     
-    ultraRespawnActive = true
+    ultraResetActive = true
     
-    while MultiRespawnEnabled do
-        -- Дополнительные быстрые убийства
-        if LocalPlayer.Character then
-            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                humanoid.Health = 0
-                respawnCount = respawnCount + 1
-                
-                -- Сразу еще одна смерть
-                wait(0.001)
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-                    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0
-                    respawnCount = respawnCount + 1
+    while MultiResetEnabled do
+        -- Дополнительные мгновенные ресеты
+        for i = 1, 5 do
+            if LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid and humanoid.Health > 0 then
+                    humanoid.Health = 0
+                    resetCount = resetCount + 1
+                else
+                    LocalPlayer.Character:BreakJoints()
+                    resetCount = resetCount + 1
                 end
             end
+            wait(0.0001)
         end
         
-        wait(0.03)
+        wait(0.02)
     end
     
-    ultraRespawnActive = false
+    ultraResetActive = false
 end
 
--- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ (РАБОТАЕТ ОДНОВРЕМЕННО)
-local extremeObjects = {}
-local memoryHogs = {}
-local cpuTasks = {}
-
-local function createMemoryApocalypse()
-    if not LagEnabled then return end
-    
-    for i = 1, math.floor(LagIntensity / 5) do
-        memoryHogs[i] = {
-            data = string.rep("EXTREME_LAG_" .. i, 10000),
-            nested = {}
-        }
-        for j = 1, 1000 do
-            memoryHogs[i].nested[j] = {
-                moreData = string.rep("NESTED_LAG", 1000),
-                numbers = {}
-            }
-            for k = 1, 100 do
-                memoryHogs[i].nested[j].numbers[k] = math.random(1, 1000000)
-            end
-        end
-    end
-end
-
-local function createCPUArmageddon()
-    if not LagEnabled then return end
-    
-    local computations = 0
-    local startTime = tick()
-    
-    while tick() - startTime < (LagIntensity / 300) and LagEnabled do
-        for i = 1, LagIntensity * 50 do
-            local x = math.sin(tick() + i) * math.cos(tick() - i)
-            local y = math.tan(x) * math.atan(x)
-            computations = computations + y
-        end
-    end
-end
-
-local function createRenderCataclysm()
-    if not LagEnabled then return end
-    
-    for i = 1, math.floor(LagIntensity / 5) do
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.3, 0.3, 0.3)
-        part.Position = Vector3.new(
-            math.random(-50, 50),
-            math.random(5, 30), 
-            math.random(-50, 50)
-        )
-        part.Anchored = false
-        part.Material = Enum.Material.Neon
-        part.BrickColor = BrickColor.random()
-        part.Parent = workspace
-        
-        local fire = Instance.new("Fire")
-        fire.Size = math.random(3, 10)
-        fire.Heat = math.random(3, 10)
-        fire.Parent = part
-        
-        table.insert(extremeObjects, part)
-        
-        spawn(function()
-            while part and part.Parent and LagEnabled do
-                part.RotVelocity = Vector3.new(
-                    math.random(-30, 30),
-                    math.random(-30, 30),
-                    math.random(-30, 30)
-                )
-                part.Velocity = Vector3.new(
-                    math.sin(tick() * 5) * 5,
-                    math.cos(tick() * 4) * 3,
-                    math.cos(tick() * 6) * 5
-                )
-                wait(0.01)
-            end
-        end)
-    end
-end
-
-local function createNetworkDoom()
-    if not LagEnabled then return end
-    
-    for i = 1, math.floor(LagIntensity / 10) do
-        spawn(function()
-            while LagEnabled do
-                for j = 1, 5 do
-                    spawn(function()
-                        local start = tick()
-                        while tick() - start < 0.05 and LagEnabled do
-                            local data = {}
-                            for k = 1, 50 do
-                                data[k] = math.random(1, 1000000)
-                            end
-                        end
-                    end)
-                end
-                wait(0.01)
-            end
-        end)
-    end
-end
-
--- Запускаем все системы
-spawn(function()
-    -- Основной цикл лагов (РАБОТАЕТ ВСЕГДА КОГДА ВКЛЮЧЕНЫ ЛАГИ)
-    while true do
-        if LagEnabled then
-            createMemoryApocalypse()
-            createCPUArmageddon() 
-            createRenderCataclysm()
-            createNetworkDoom()
-            wait(0.03)
-        else
-            for _, obj in pairs(extremeObjects) do
-                if obj and obj.Parent then
-                    obj:Destroy()
-                end
-            end
-            extremeObjects = {}
-            memoryHogs = {}
-            cpuTasks = {}
-            wait(0.5)
-        end
-    end
-end)
-
--- Запускаем мгновенный многократный респавн
+-- Запускаем системы
 spawn(function()
     while true do
-        if MultiRespawnEnabled and not respawnActive then
-            instantMultiRespawn()
+        if MultiResetEnabled and not resetActive then
+            ultraFastMultiReset()
         end
         wait(0.1)
     end
 end)
 
--- Запускаем ультра-быстрый респавн
 spawn(function()
     while true do
-        if MultiRespawnEnabled and not ultraRespawnActive then
-            ultraFastRespawn()
+        if MultiResetEnabled and not ultraResetActive then
+            additionalUltraReset()
         end
         wait(0.1)
     end
 end)
 
-print("💥💥💥 EXTREME LAG + INSTANT MULTI-RESPAWN LOADED!")
-print("🎮 Press L to toggle extreme lag")
-print("⚡ INSTANT MULTI-RESPAWN: Resets 5 times instantly per cycle!")
-print("💥 Lag machine works SIMULTANEOUSLY with respawn!")
-print("♾️ Will continue until you press L again!")
+print("⚡⚡⚡ ULTRA FAST MULTI-RESET SCRIPT LOADED!")
+print("🎮 Press R to start/stop ultra fast reset")
+print("🚀 50+ resets per second!")
+print("♾️ Will reset infinitely until you press R again!")
