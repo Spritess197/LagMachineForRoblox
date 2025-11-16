@@ -310,90 +310,84 @@ local function startUltimateLag()
         local lightMultiplier = lagIntensity * 5
         
         -- Безумно быстрое изменение ВСЕХ свойств освещения
-        pcall(function()
-            Lighting.Brightness = math.random(0.5, 10)
-            Lighting.ClockTime = math.random(0, 24)
-            Lighting.GeographicLatitude = math.random(-90, 90)
-            Lighting.Ambient = Color3.new(math.random(), math.random(), math.random())
-            Lighting.OutdoorAmbient = Color3.new(math.random(), math.random(), math.random())
-            Lighting.ColorShift_Bottom = Color3.new(math.random(), math.random(), math.random())
-            Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
-            Lighting.FogColor = Color3.new(math.random(), math.random(), math.random())
-            Lighting.FogEnd = math.random(50, 1000)
-            Lighting.FogStart = math.random(0, 500)
-            Lighting.GlobalShadows = math.random() > 0.5
-            Lighting.ShadowSoftness = math.random()
-        end)
+        Lighting.Brightness = math.random(0.5, 10)
+        Lighting.ClockTime = math.random(0, 24)
+        Lighting.GeographicLatitude = math.random(-90, 90)
+        Lighting.Ambient = Color3.new(math.random(), math.random(), math.random())
+        Lighting.OutdoorAmbient = Color3.new(math.random(), math.random(), math.random())
+        Lighting.ColorShift_Bottom = Color3.new(math.random(), math.random(), math.random())
+        Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
+        Lighting.FogColor = Color3.new(math.random(), math.random(), math.random())
+        Lighting.FogEnd = math.random(50, 1000)
+        Lighting.FogStart = math.random(0, 500)
+        Lighting.GlobalShadows = math.random() > 0.5
+        Lighting.ShadowSoftness = math.random()
         
         -- Массовое создание всех типов источников света
         for i = 1, lightMultiplier do
-            pcall(function()
-                -- PointLight
-                local pointLight = Instance.new("PointLight")
-                pointLight.Brightness = math.random(3, 20)
-                pointLight.Range = math.random(10, 40)
-                pointLight.Color = Color3.new(math.random(), math.random(), math.random())
-                pointLight.Shadows = true
-                pointLight.Parent = workspace.Terrain
-                game:GetService("Debris"):AddItem(pointLight, 0.2)
-                
-                -- SpotLight
-                local spotLight = Instance.new("SpotLight")
-                spotLight.Brightness = math.random(2, 15)
-                spotLight.Range = math.random(8, 35)
-                spotLight.Angle = math.random(5, 60)
-                spotLight.Color = Color3.new(math.random(), math.random(), math.random())
-                spotLight.Parent = workspace.Terrain
-                game:GetService("Debris"):AddItem(spotLight, 0.15)
-                
-                -- SurfaceLight
-                local surfaceLight = Instance.new("SurfaceLight")
-                surfaceLight.Brightness = math.random(1, 12)
-                surfaceLight.Range = math.random(5, 25)
-                surfaceLight.Angle = math.random(3, 45)
-                surfaceLight.Color = Color3.new(math.random(), math.random(), math.random())
-                surfaceLight.Face = Enum.NormalId[{"Top", "Bottom", "Left", "Right", "Front", "Back"}[math.random(1, 6)]]
-                surfaceLight.Parent = workspace.Terrain
-                game:GetService("Debris"):AddItem(surfaceLight, 0.1)
-            end)
+            -- PointLight
+            local pointLight = Instance.new("PointLight")
+            pointLight.Brightness = math.random(3, 20)
+            pointLight.Range = math.random(10, 40)
+            pointLight.Color = Color3.new(math.random(), math.random(), math.random())
+            pointLight.Shadows = true
+            pointLight.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(pointLight, 0.2)
+            
+            -- SpotLight
+            local spotLight = Instance.new("SpotLight")
+            spotLight.Brightness = math.random(2, 15)
+            spotLight.Range = math.random(8, 35)
+            spotLight.Angle = math.random(5, 60)
+            spotLight.Color = Color3.new(math.random(), math.random(), math.random())
+            spotLight.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(spotLight, 0.15)
+            
+            -- SurfaceLight
+            local surfaceLight = Instance.new("SurfaceLight")
+            surfaceLight.Brightness = math.random(1, 12)
+            surfaceLight.Range = math.random(5, 25)
+            surfaceLight.Angle = math.random(3, 45)
+            surfaceLight.Color = Color3.new(math.random(), math.random(), math.random())
+            surfaceLight.Face = Enum.NormalId[{"Top", "Bottom", "Left", "Right", "Front", "Back"}[math.random(1, 6)]]
+            surfaceLight.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(surfaceLight, 0.1)
         end
         
         -- === МЕТОД 3: ФИЗИКА НА МАКСИМУМЕ ===
         for _, part in pairs(physicsParts) do
             if part and part.Parent then
-                pcall(function()
-                    -- Обновляем BodyVelocity
-                    local bodyVelocity = part:FindFirstChildOfClass("BodyVelocity")
-                    if bodyVelocity then
-                        bodyVelocity.Velocity = Vector3.new(
-                            math.random(-40, 40),
-                            math.random(5, 30),
-                            math.random(-40, 40)
-                        )
-                    end
-                    
-                    -- Обновляем BodyGyro
-                    local bodyGyro = part:FindFirstChildOfClass("BodyGyro")
-                    if bodyGyro then
-                        bodyGyro.CFrame = CFrame.Angles(
-                            math.rad(math.random(0, 360)),
-                            math.rad(math.random(0, 360)),
-                            math.rad(math.random(0, 360))
-                        )
-                    end
-                    
-                    -- Добавляем случайные силы
-                    if math.random(1, 10) == 1 then
-                        local force = Instance.new("BodyForce")
-                        force.Force = Vector3.new(
-                            math.random(-100, 100),
-                            math.random(50, 200),
-                            math.random(-100, 100)
-                        )
-                        force.Parent = part
-                        game:GetService("Debris"):AddItem(force, 0.1)
-                    end
-                end)
+                -- Обновляем BodyVelocity
+                local bodyVelocity = part:FindFirstChildOfClass("BodyVelocity")
+                if bodyVelocity then
+                    bodyVelocity.Velocity = Vector3.new(
+                        math.random(-40, 40),
+                        math.random(5, 30),
+                        math.random(-40, 40)
+                    )
+                end
+                
+                -- Обновляем BodyGyro
+                local bodyGyro = part:FindFirstChildOfClass("BodyGyro")
+                if bodyGyro then
+                    bodyGyro.CFrame = CFrame.Angles(
+                        math.rad(math.random(0, 360)),
+                        math.rad(math.random(0, 360)),
+                        math.rad(math.random(0, 360))
+                    )
+                end
+                
+                -- Добавляем случайные силы
+                if math.random(1, 10) == 1 then
+                    local force = Instance.new("BodyForce")
+                    force.Force = Vector3.new(
+                        math.random(-100, 100),
+                        math.random(50, 200),
+                        math.random(-100, 100)
+                    )
+                    force.Parent = part
+                    game:GetService("Debris"):AddItem(force, 0.1)
+                end
             end
         end
         
@@ -401,70 +395,64 @@ local function startUltimateLag()
         local objectMultiplier = lagIntensity * 8
         
         for i = 1, objectMultiplier do
-            pcall(function()
-                -- Создаем части с разными свойствами
-                local part = Instance.new("Part")
-                part.Size = Vector3.new(
-                    math.random(0.5, 3),
-                    math.random(0.5, 3),
-                    math.random(0.5, 3)
-                )
-                part.Position = Vector3.new(
-                    math.random(-60, 60),
-                    math.random(5, 25),
-                    math.random(-60, 60)
-                )
-                part.Anchored = true
-                part.CanCollide = false
-                part.Material = Enum.Material[{"Neon", "Plastic", "Metal", "Wood", "Glass"}[math.random(1, 5)]]
-                part.BrickColor = BrickColor.random()
-                part.Transparency = math.random(0, 50) / 100
-                part.Reflectance = math.random(0, 50) / 100
-                
-                -- Добавляем свечение
-                local light = Instance.new("PointLight")
-                light.Brightness = math.random(5, 15)
-                light.Range = math.random(5, 20)
-                light.Color = part.BrickColor.Color
-                light.Parent = part
-                
-                part.Parent = workspace
-                table.insert(createdParts, part)
-                game:GetService("Debris"):AddItem(part, 0.3)
-            end)
+            -- Создаем части с разными свойствами
+            local part = Instance.new("Part")
+            part.Size = Vector3.new(
+                math.random(0.5, 3),
+                math.random(0.5, 3),
+                math.random(0.5, 3)
+            )
+            part.Position = Vector3.new(
+                math.random(-60, 60),
+                math.random(5, 25),
+                math.random(-60, 60)
+            )
+            part.Anchored = true
+            part.CanCollide = false
+            part.Material = Enum.Material[{"Neon", "Plastic", "Metal", "Wood", "Glass"}[math.random(1, 5)]]
+            part.BrickColor = BrickColor.random()
+            part.Transparency = math.random(0, 50) / 100
+            part.Reflectance = math.random(0, 50) / 100
+            
+            -- Добавляем свечение
+            local light = Instance.new("PointLight")
+            light.Brightness = math.random(5, 15)
+            light.Range = math.random(5, 20)
+            light.Color = part.BrickColor.Color
+            light.Parent = part
+            
+            part.Parent = workspace
+            table.insert(createdParts, part)
+            game:GetService("Debris"):AddItem(part, 0.3)
         end
         
         -- === МЕТОД 5: ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ ===
-        pcall(function()
-            -- Быстрое изменение пост-обработки
-            if Lighting:FindFirstChild("Blur") then
-                Lighting.Blur.Size = math.random(0, 20)
-            end
-            if Lighting:FindFirstChild("ColorCorrection") then
-                Lighting.ColorCorrection.Contrast = math.random(-2, 2)
-                Lighting.ColorCorrection.Brightness = math.random(-1, 1)
-                Lighting.ColorCorrection.Saturation = math.random(-2, 2)
-                Lighting.ColorCorrection.TintColor = Color3.new(math.random(), math.random(), math.random())
-            end
-        end)
+        -- Быстрое изменение пост-обработки
+        if Lighting:FindFirstChild("Blur") then
+            Lighting.Blur.Size = math.random(0, 20)
+        end
+        if Lighting:FindFirstChild("ColorCorrection") then
+            Lighting.ColorCorrection.Contrast = math.random(-2, 2)
+            Lighting.ColorCorrection.Brightness = math.random(-1, 1)
+            Lighting.ColorCorrection.Saturation = math.random(-2, 2)
+            Lighting.ColorCorrection.TintColor = Color3.new(math.random(), math.random(), math.random())
+        end
         
         -- Создание партиклов
         for i = 1, math.min(3, lagIntensity) do
-            pcall(function()
-                local particle = Instance.new("Part")
-                particle.Size = Vector3.new(0.2, 0.2, 0.2)
-                particle.Position = Vector3.new(
-                    math.random(-10, 10),
-                    math.random(2, 8),
-                    math.random(-10, 10)
-                )
-                particle.Anchored = true
-                particle.CanCollide = false
-                particle.Material = Enum.Material.Neon
-                particle.BrickColor = BrickColor.random()
-                particle.Parent = workspace
-                game:GetService("Debris"):AddItem(particle, 0.1)
-            end)
+            local particle = Instance.new("Part")
+            particle.Size = Vector3.new(0.2, 0.2, 0.2)
+            particle.Position = Vector3.new(
+                math.random(-10, 10),
+                math.random(2, 8),
+                math.random(-10, 10)
+            )
+            particle.Anchored = true
+            particle.CanCollide = false
+            particle.Material = Enum.Material.Neon
+            particle.BrickColor = BrickColor.random()
+            particle.Parent = workspace
+            game:GetService("Debris"):AddItem(particle, 0.1)
         end
         
         -- === МЕТОД 6: ДОПОЛНИТЕЛЬНЫЕ ВЫЧИСЛЕНИЯ ===
@@ -482,19 +470,19 @@ end
 -- Очистка всего
 local function cleanupAll()
     for _, conn in pairs(connections) do
-        pcall(function() conn:Disconnect() end)
+        conn:Disconnect()
     end
     connections = {}
     
     -- Удаляем все созданные части
     for _, part in pairs(physicsParts) do
         if part and part.Parent then
-            pcall(function() part:Destroy() end)
+            part:Destroy()
         end
     end
     for _, part in pairs(createdParts) do
         if part and part.Parent then
-            pcall(function() part:Destroy() end)
+            part:Destroy()
         end
     end
     physicsParts = {}
@@ -520,7 +508,7 @@ intensityBtn.MouseButton1Click:Connect(function()
         intensityBtn.Text = "INTENSITY: LOW"
         intensityBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
     end
-    statusLabel.Text = string.format("Status: %s\nIntensity: %s\nFPS: --\nMethods: ALL", 
+    statusLabel.Text = string.format("Status: %s\nIntensity: %s\nFPS: --", 
         LagEnabled and "ENABLED" or "DISABLED", 
         lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME")
 end)
@@ -530,7 +518,7 @@ toggleBtn.MouseButton1Click:Connect(function()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
-        statusLabel.Text = string.format("Status: ENABLED\nIntensity: %s\nFPS: DROPPING\nMethods: ALL", 
+        statusLabel.Text = string.format("Status: ENABLED\nIntensity: %s\nFPS: DROPPING", 
             lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME")
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
         toggleBtn.Text = "ULTIMATE LAG OFF"
@@ -540,7 +528,7 @@ toggleBtn.MouseButton1Click:Connect(function()
         print("⚡ Running ALL methods simultaneously!")
         print("🔥 Extreme calculations + Physics + Lighting + Objects!")
     else
-        statusLabel.Text = string.format("Status: DISABLED\nIntensity: %s\nFPS: NORMAL\nMethods: ALL", 
+        statusLabel.Text = string.format("Status: DISABLED\nIntensity: %s\nFPS: NORMAL", 
             lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME")
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         toggleBtn.Text = "ULTIMATE LAG ON"
@@ -558,14 +546,14 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = string.format("Status: ENABLED\nIntensity: %s\nFPS: DROPPING\nMethods: ALL", 
+            statusLabel.Text = string.format("Status: ENABLED\nIntensity: %s\nFPS: DROPPING", 
                 lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME")
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
             toggleBtn.Text = "ULTIMATE LAG OFF"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
             startUltimateLag()
         else
-            statusLabel.Text = string.format("Status: DISABLED\nIntensity: %s\nFPS: NORMAL\nMethods: ALL", 
+            statusLabel.Text = string.format("Status: DISABLED\nIntensity: %s\nFPS: NORMAL", 
                 lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME")
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             toggleBtn.Text = "ULTIMATE LAG ON"
@@ -588,7 +576,7 @@ spawn(function()
             lastTick = tick()
             
             if LagEnabled then
-                statusLabel.Text = string.format("Status: ENABLED\nIntensity: %s\nFPS: %d\nMethods: ALL", 
+                statusLabel.Text = string.format("Status: ENABLED\nIntensity: %s\nFPS: %d", 
                     lagIntensity == 1 and "LOW" or lagIntensity == 4 and "MEDIUM" or lagIntensity == 8 and "HIGH" or "EXTREME",
                     fps)
             end
@@ -623,4 +611,3 @@ print("   🧩 Mass Object Creation")
 print("   ✨ Particle Effects")
 print("🎚️ 4 Intensity levels up to EXTREME!")
 print("⚠️ WARNING: Will cause MAJOR FPS drops!")
-
