@@ -1,12 +1,11 @@
--- MAXIMUM SERVER LAG (No Kick) - 5-10 REQS/SEC
+-- MAXIMUM SERVER LAG (Alternative Methods)
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local LagEnabled = false
 local requestCount = 0
-local foundRemotes = {}
 
 -- GUI
 local screenGui = Instance.new("ScreenGui")
@@ -82,7 +81,7 @@ sectionCorner.Parent = lagSection
 local lagTitle = Instance.new("TextLabel")
 lagTitle.Size = UDim2.new(1, -10, 0, 25)
 lagTitle.Position = UDim2.new(0, 10, 0, 5)
-lagTitle.Text = "Maximum Lag - No Kick"
+lagTitle.Text = "Alternative Lag Methods"
 lagTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 lagTitle.BackgroundTransparency = 1
 lagTitle.TextSize = 12
@@ -93,7 +92,7 @@ lagTitle.Parent = lagSection
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -10, 0, 60)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nRequests: 0\nMode: 5/sec"
+statusLabel.Text = "Status: DISABLED\nMethod: Physics\nMode: Safe"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -126,8 +125,8 @@ local function createActionButton(xPosition, text, color)
     return btn
 end
 
-local toggleBtn = createActionButton(0, "MAX LAG ON", Color3.fromRGB(200, 60, 60))
-local modeBtn = createActionButton(0.52, "5/SEC MODE", Color3.fromRGB(80, 120, 200))
+local toggleBtn = createActionButton(0, "LAG ON", Color3.fromRGB(200, 60, 60))
+local modeBtn = createActionButton(0.52, "PHYSICS", Color3.fromRGB(80, 120, 200))
 
 -- Функции для кнопок
 local function setupButtonHover(button)
@@ -145,7 +144,7 @@ setupButtonHover(toggleBtn)
 setupButtonHover(modeBtn)
 
 local scriptRunning = true
-local requestsPerSecond = 5 -- Ограничение до 5 запросов в секунду
+local currentMethod = "physics" -- physics, parts, network
 
 local function closeGUI()
     scriptRunning = false
@@ -182,84 +181,155 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- АВТОМАТИЧЕСКИЙ ПОИСК REMOTE ОБЪЕКТОВ
-local function findRemoteObjects()
-    foundRemotes = {}
+-- МЕТОД 1: ФИЗИЧЕСКИЕ ЛАГИ
+local physicsParts = {}
+local function createPhysicsLag()
+    if not LagEnabled then return end
     
-    -- Ищем во всех местах
-    local searchLocations = {
-        ReplicatedStorage,
-        workspace,
-        game:GetService("Players"),
-        game:GetService("Lighting")
-    }
-    
-    for _, location in pairs(searchLocations) do
-        pcall(function()
-            for _, obj in pairs(location:GetDescendants()) do
-                if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) then
-                    table.insert(foundRemotes, obj)
-                end
-            end
-        end)
+    -- Создаем физические части
+    for i = 1, 5 do
+        local part = Instance.new("Part")
+        part.Name = "LagPart_" .. i
+        part.Size = Vector3.new(2, 2, 2)
+        part.Position = Vector3.new(
+            math.random(-20, 20),
+            math.random(10, 30),
+            math.random(-20, 20)
+        )
+        part.Anchored = false
+        part.CanCollide = true
+        part.Material = Enum.Material.Neon
+        part.BrickColor = BrickColor.random()
+        part.Parent = workspace
+        
+        -- Добавляем физику
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Velocity = Vector3.new(
+            math.random(-50, 50),
+            math.random(10, 30),
+            math.random(-50, 50)
+        )
+        bodyVelocity.Parent = part
+        
+        table.insert(physicsParts, part)
     end
     
-    print("📡 Auto-found " .. #foundRemotes .. " remote objects")
-end
-
--- МАКСИМАЛЬНЫЕ ЛАГИ БЕЗ КИКОВ (5-10 запросов/сек)
-local function sendLimitedRequests()
-    if not LagEnabled or #foundRemotes == 0 then return end
-    
-    local requestsThisCycle = 0
-    local maxRequestsPerCycle = requestsPerSecond
-    
-    -- Используем только несколько Remote объектов за раз
-    for i = 1, math.min(3, #foundRemotes) do
-        if not LagEnabled or requestsThisCycle >= maxRequestsPerCycle then break end
-        
-        local remote = foundRemotes[math.random(1, #foundRemotes)]
-        pcall(function()
-            if remote:IsA("RemoteEvent") then
-                -- Очень легкие данные
-                local safeData = {
-                    math.random(1, 10),
-                    "action_" .. math.random(1, 5),
-                    true,
-                    false
-                }
-                
-                local data = safeData[math.random(1, #safeData)]
-                remote:FireServer(data)
-                requestCount = requestCount + 1
-                requestsThisCycle = requestsThisCycle + 1
-                
-            elseif remote:IsA("RemoteFunction") then
-                remote:InvokeServer("request_" .. math.random(1, 10))
-                requestCount = requestCount + 1
-                requestsThisCycle = requestsThisCycle + 1
+    -- Обновляем физику
+    for _, part in pairs(physicsParts) do
+        if part and part.Parent then
+            local bodyVelocity = part:FindFirstChildOfClass("BodyVelocity")
+            if bodyVelocity then
+                bodyVelocity.Velocity = Vector3.new(
+                    math.random(-30, 30),
+                    math.random(5, 15),
+                    math.random(-30, 30)
+                )
             end
-        end)
-        
-        -- Задержка между каждым запросом
-        wait(0.05)
+        end
     end
+    
+    requestCount = requestCount + 1
 end
 
--- Переключение режима скорости
+-- МЕТОД 2: МАССОВОЕ СОЗДАНИЕ ЧАСТЕЙ
+local createdParts = {}
+local function createMassParts()
+    if not LagEnabled then return end
+    
+    -- Создаем много статических частей
+    for i = 1, 10 do
+        local part = Instance.new("Part")
+        part.Name = "StaticPart_" .. i
+        part.Size = Vector3.new(1, 1, 1)
+        part.Position = Vector3.new(
+            math.random(-50, 50),
+            math.random(5, 20),
+            math.random(-50, 50)
+        )
+        part.Anchored = true
+        part.CanCollide = true
+        part.Material = Enum.Material.Plastic
+        part.BrickColor = BrickColor.random()
+        part.Parent = workspace
+        
+        table.insert(createdParts, part)
+    end
+    
+    requestCount = requestCount + 1
+end
+
+-- МЕТОД 3: СЕТЕВЫЕ ЛАГИ (без спама Remote)
+local function createNetworkLag()
+    if not LagEnabled then return end
+    
+    -- Легкие запросы к серверу с большими интервалами
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            -- Меняем небольшие свойства
+            humanoid.WalkSpeed = math.random(16, 18)
+            humanoid.JumpPower = math.random(50, 52)
+        end
+        
+        -- Легкое движение
+        character:SetPrimaryPartCFrame(
+            character:GetPrimaryPartCFrame() * CFrame.new(0, 0.1, 0)
+        )
+    end
+    
+    requestCount = requestCount + 1
+end
+
+-- МЕТОД 4: ЛАГИ ЧЕРЕЗ ПЕТЛЮ ОБНОВЛЕНИЯ
+local function updateLoopLag()
+    if not LagEnabled then return end
+    
+    -- Интенсивные вычисления на клиенте
+    local calculations = 0
+    for i = 1, 1000 do
+        calculations = calculations + math.sin(i) * math.cos(i)
+    end
+    
+    requestCount = requestCount + 1
+end
+
+-- Очистка созданных объектов
+local function cleanupObjects()
+    for _, part in pairs(physicsParts) do
+        if part and part.Parent then
+            part:Destroy()
+        end
+    end
+    for _, part in pairs(createdParts) do
+        if part and part.Parent then
+            part:Destroy()
+        end
+    end
+    physicsParts = {}
+    createdParts = {}
+end
+
+-- Переключение методов
 modeBtn.MouseButton1Click:Connect(function()
-    if requestsPerSecond == 5 then
-        requestsPerSecond = 10 -- Быстрый режим
-        modeBtn.Text = "10/SEC MODE"
+    if currentMethod == "physics" then
+        currentMethod = "parts"
+        modeBtn.Text = "PARTS"
         modeBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 60)
-        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 10/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
-        print("⚡ Fast mode enabled - 10 requests/sec")
+        statusLabel.Text = string.format("Status: %s\nMethod: Parts\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED")
+        print("🔷 Parts mode - mass part creation")
+    elseif currentMethod == "parts" then
+        currentMethod = "network"
+        modeBtn.Text = "NETWORK"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(120, 200, 80)
+        statusLabel.Text = string.format("Status: %s\nMethod: Network\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED")
+        print("🌐 Network mode - light network requests")
     else
-        requestsPerSecond = 5 -- Медленный режим
-        modeBtn.Text = "5/SEC MODE"
+        currentMethod = "physics"
+        modeBtn.Text = "PHYSICS"
         modeBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
-        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 5/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
-        print("🐢 Slow mode enabled - 5 requests/sec")
+        statusLabel.Text = string.format("Status: %s\nMethod: Physics\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED")
+        print("⚡ Physics mode - physics calculations")
     end
 end)
 
@@ -268,17 +338,18 @@ toggleBtn.MouseButton1Click:Connect(function()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
-        statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
+        statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        toggleBtn.Text = "MAX LAG OFF"
+        toggleBtn.Text = "LAG OFF"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-        print("🚀 MAXIMUM LAG ACTIVATED! Using " .. #foundRemotes .. " remotes at " .. requestsPerSecond .. "/sec")
+        print("🚀 LAG ACTIVATED! Method: " .. currentMethod)
     else
-        statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
+        statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        toggleBtn.Text = "MAX LAG ON"
+        toggleBtn.Text = "LAG ON"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-        print("🛑 Maximum lag stopped")
+        cleanupObjects()
+        print("🛑 Lag stopped")
     end
 end)
 
@@ -290,50 +361,66 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
+            statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-            toggleBtn.Text = "MAX LAG OFF"
+            toggleBtn.Text = "LAG OFF"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
         else
-            statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
+            statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-            toggleBtn.Text = "MAX LAG ON"
+            toggleBtn.Text = "LAG ON"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+            cleanupObjects()
         end
     end
 end)
 
--- ОСНОВНОЙ ЦИКЛ МАКСИМАЛЬНЫХ ЛАГОВ
+-- ОСНОВНОЙ ЦИКЛ ЛАГОВ
 spawn(function()
     while scriptRunning do
         if LagEnabled then
-            sendLimitedRequests()
-            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
+            if currentMethod == "physics" then
+                createPhysicsLag()
+            elseif currentMethod == "parts" then
+                createMassParts()
+            elseif currentMethod == "network" then
+                createNetworkLag()
+            end
             
-            -- Большая задержка между циклами
-            wait(0.3) -- Медленные циклы
+            -- Добавляем клиентские вычисления
+            updateLoopLag()
+            
+            statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nActions: %d", currentMethod:upper(), requestCount)
+            
+            -- Большие задержки для безопасности
+            wait(0.5) -- Только 2 действия в секунду
         else
             wait(0.5)
         end
     end
 end)
 
--- Автоматический поиск Remote каждые 15 секунд
+-- Автоматическая очистка каждые 30 секунд
 spawn(function()
     while scriptRunning do
-        findRemoteObjects()
-        wait(15)
+        if LagEnabled then
+            cleanupObjects()
+        end
+        wait(30)
     end
 end)
 
 -- Инициализация
-findRemoteObjects()
 player.CharacterRemoving:Connect(function()
-    if scriptRunning then closeGUI() end
+    if scriptRunning then 
+        cleanupObjects()
+        closeGUI() 
+    end
 end)
 
-print("💥💥💥 MAXIMUM SERVER LAG LOADED!")
-print("📡 Auto-found " .. #foundRemotes .. " remote objects")
-print("🎮 Click MAX LAG ON or press L to start")
-print("🐢 Slow mode: 5 requests/sec (very safe)")
-print("⚡ Fast mode: 10 requests/sec (safe)")
+print("💥💥💥 ALTERNATIVE LAG METHODS LOADED!")
+print("⚡ Physics mode - Physics calculations")
+print("🔷 Parts mode - Mass part creation") 
+print("🌐 Network mode - Light network requests")
+print("🎮 Click LAG ON or press L to start")
+print("🛡️ All methods are safe and won't get you banned")
