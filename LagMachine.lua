@@ -1,4 +1,4 @@
--- EXTREME LAG MACHINE + INFINITE RESPAWN
+-- EXTREME LAG MACHINE + INSTANT MULTI-RESPAWN
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -7,7 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 -- Настройки
 local LagEnabled = false
 local LagIntensity = 500
-local InfiniteRespawnEnabled = false
+local MultiRespawnEnabled = false
 
 -- Создаем GUI
 local screenGui = Instance.new("ScreenGui")
@@ -146,6 +146,7 @@ statusLabel.Parent = intensitySection
 
 -- Buttons
 local buttonsFrame = Instance.new("Frame")
+local buttonsFrame = Instance.new("Frame")
 buttonsFrame.Size = UDim2.new(1, 0, 0, 90)
 buttonsFrame.Position = UDim2.new(0, 0, 0, 90)
 buttonsFrame.BackgroundTransparency = 1
@@ -154,7 +155,7 @@ buttonsFrame.Parent = content
 -- Info label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 1, 0)
-infoLabel.Text = "Press L to toggle extreme lag\n♾️ INFINITE RESPAWN ENABLED\n100-500 = Heavy lag\n500-1000 = Extreme lag\n1000-2000 = CRASH level"
+infoLabel.Text = "Press L to toggle extreme lag\n⚡ INSTANT MULTI-RESPAWN\n♾️ Resets multiple times instantly\n💥 Lag machine works simultaneously"
 infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextSize = 10
@@ -211,24 +212,24 @@ end)
 -- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ L
 local function toggleLag()
     LagEnabled = not LagEnabled
-    InfiniteRespawnEnabled = LagEnabled -- Включаем бесконечный респавн вместе с лагами
+    MultiRespawnEnabled = LagEnabled
     
     if LagEnabled then
         statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
         statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
         print("💥💥💥 EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
-        print("♾️ INFINITE RESPAWN ENABLED - You will respawn FOREVER!")
+        print("⚡ INSTANT MULTI-RESPAWN ENABLED!")
         
-        -- Немедленно запускаем бесконечный респавн
+        -- Немедленно запускаем многократный респавн
         if LocalPlayer.Character then
             LocalPlayer.Character:BreakJoints()
         end
     else
         statusLabel.Text = "Status: DISABLED (Press L)"
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        InfiniteRespawnEnabled = false
+        MultiRespawnEnabled = false
         print("✅ Extreme lag deactivated")
-        print("🛑 INFINITE RESPAWN STOPPED")
+        print("🛑 Multi-respawn stopped")
     end
 end
 
@@ -241,72 +242,103 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- СИСТЕМА БЕСКОНЕЧНОГО РЕСПАВНА
+-- СИСТЕМА МГНОВЕННОГО МНОГОКРАТНОГО РЕСПАВНА
 local respawnCount = 0
 local respawnActive = false
 
-local function infiniteRespawn()
-    if not InfiniteRespawnEnabled or respawnActive then return end
+local function instantMultiRespawn()
+    if not MultiRespawnEnabled or respawnActive then return end
     
     respawnActive = true
-    print("♾️ STARTING INFINITE RESPAWN LOOP...")
+    print("⚡ STARTING INSTANT MULTI-RESPAWN...")
     
-    while InfiniteRespawnEnabled do
+    while MultiRespawnEnabled do
+        -- РЕСПАВН №1
+        if LocalPlayer.Character then
+            LocalPlayer.Character:BreakJoints()
+        end
+        LocalPlayer:LoadCharacter()
         respawnCount = respawnCount + 1
         
-        -- Способ 1: Немедленно убиваем персонажа если он жив
+        -- МГНОВЕННЫЙ РЕСПАВН №2 (сразу после первого)
+        wait(0.001) -- Минимальная задержка
         if LocalPlayer.Character then
-            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                humanoid.Health = 0
-            else
-                LocalPlayer.Character:BreakJoints()
-            end
+            LocalPlayer.Character:BreakJoints()
         end
-        
-        -- Способ 2: Принудительный респавн
         LocalPlayer:LoadCharacter()
+        respawnCount = respawnCount + 1
         
-        -- Выводим счетчик каждые 10 респавнов
-        if respawnCount % 10 == 0 then
-            print("♾️ INFINITE RESPAWN #" .. respawnCount)
+        -- МГНОВЕННЫЙ РЕСПАВН №3 (еще один сразу)
+        wait(0.001)
+        if LocalPlayer.Character then
+            LocalPlayer.Character:BreakJoints()
+        end
+        LocalPlayer:LoadCharacter()
+        respawnCount = respawnCount + 1
+        
+        -- МГНОВЕННЫЙ РЕСПАВН №4 (и еще один)
+        wait(0.001)
+        if LocalPlayer.Character then
+            LocalPlayer.Character:BreakJoints()
+        end
+        LocalPlayer:LoadCharacter()
+        respawnCount = respawnCount + 1
+        
+        -- МГНОВЕННЫЙ РЕСПАВН №5 (последний в цикле)
+        wait(0.001)
+        if LocalPlayer.Character then
+            LocalPlayer.Character:BreakJoints()
+        end
+        LocalPlayer:LoadCharacter()
+        respawnCount = respawnCount + 1
+        
+        -- Выводим счетчик
+        if respawnCount % 25 == 0 then
+            print("⚡ INSTANT MULTI-RESPAWN #" .. respawnCount .. " (5 resets per cycle)")
         end
         
-        -- Минимальная задержка для максимальной скорости
-        wait(0.05) -- 20 респавнов в секунду!
+        wait(0.05) -- Пауза между циклами многократного респавна
     end
     
     respawnActive = false
-    print("🛑 INFINITE RESPAWN LOOP STOPPED")
+    print("🛑 INSTANT MULTI-RESPAWN STOPPED")
 end
 
--- ДОПОЛНИТЕЛЬНЫЙ СУПЕР-БЫСТРЫЙ ЦИКЛ РЕСПАВНА
+-- ДОПОЛНИТЕЛЬНЫЙ СУПЕР-БЫСТРЫЙ РЕСПАВН
 local ultraRespawnActive = false
 
 local function ultraFastRespawn()
-    if not InfiniteRespawnEnabled or ultraRespawnActive then return end
+    if not MultiRespawnEnabled or ultraRespawnActive then return end
     
     ultraRespawnActive = true
     
-    while InfiniteRespawnEnabled do
+    while MultiRespawnEnabled do
         -- Дополнительные быстрые убийства
         if LocalPlayer.Character then
             local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if humanoid and humanoid.Health > 0 then
                 humanoid.Health = 0
                 respawnCount = respawnCount + 1
+                
+                -- Сразу еще одна смерть
+                wait(0.001)
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0
+                    respawnCount = respawnCount + 1
+                end
             end
         end
         
-        wait(0.02) -- 50 проверок в секунду!
+        wait(0.03)
     end
     
     ultraRespawnActive = false
 end
 
--- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ
+-- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ (РАБОТАЕТ ОДНОВРЕМЕННО)
 local extremeObjects = {}
 local memoryHogs = {}
+local cpuTasks = {}
 
 local function createMemoryApocalypse()
     if not LagEnabled then return end
@@ -407,9 +439,9 @@ local function createNetworkDoom()
     end
 end
 
--- Запускаем все системы при старте
+-- Запускаем все системы
 spawn(function()
-    -- Основной цикл лагов
+    -- Основной цикл лагов (РАБОТАЕТ ВСЕГДА КОГДА ВКЛЮЧЕНЫ ЛАГИ)
     while true do
         if LagEnabled then
             createMemoryApocalypse()
@@ -425,16 +457,17 @@ spawn(function()
             end
             extremeObjects = {}
             memoryHogs = {}
+            cpuTasks = {}
             wait(0.5)
         end
     end
 end)
 
--- Запускаем бесконечный респавн при включении лагов
+-- Запускаем мгновенный многократный респавн
 spawn(function()
     while true do
-        if InfiniteRespawnEnabled and not respawnActive then
-            infiniteRespawn()
+        if MultiRespawnEnabled and not respawnActive then
+            instantMultiRespawn()
         end
         wait(0.1)
     end
@@ -443,14 +476,15 @@ end)
 -- Запускаем ультра-быстрый респавн
 spawn(function()
     while true do
-        if InfiniteRespawnEnabled and not ultraRespawnActive then
+        if MultiRespawnEnabled and not ultraRespawnActive then
             ultraFastRespawn()
         end
         wait(0.1)
     end
 end)
 
-print("💥💥💥 EXTREME LAG + INFINITE RESPAWN LOADED!")
+print("💥💥💥 EXTREME LAG + INSTANT MULTI-RESPAWN LOADED!")
 print("🎮 Press L to toggle extreme lag")
-print("♾️ INFINITE RESPAWN: You will respawn FOREVER until you press L again!")
-print("💀 Intensity 500+ for maximum chaos!")
+print("⚡ INSTANT MULTI-RESPAWN: Resets 5 times instantly per cycle!")
+print("💥 Lag machine works SIMULTANEOUSLY with respawn!")
+print("♾️ Will continue until you press L again!")
