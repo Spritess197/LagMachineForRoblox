@@ -1,4 +1,4 @@
--- MAXIMUM SERVER LAG (No Kick) - 50 REQS/SEC
+-- MAXIMUM SERVER LAG (No Kick) - 5-10 REQS/SEC
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -93,7 +93,7 @@ lagTitle.Parent = lagSection
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -10, 0, 60)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nRequests: 0\nMode: 50/sec"
+statusLabel.Text = "Status: DISABLED\nRequests: 0\nMode: 5/sec"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -127,7 +127,7 @@ local function createActionButton(xPosition, text, color)
 end
 
 local toggleBtn = createActionButton(0, "MAX LAG ON", Color3.fromRGB(200, 60, 60))
-local modeBtn = createActionButton(0.52, "50/SEC MODE", Color3.fromRGB(80, 120, 200))
+local modeBtn = createActionButton(0.52, "5/SEC MODE", Color3.fromRGB(80, 120, 200))
 
 -- Функции для кнопок
 local function setupButtonHover(button)
@@ -145,7 +145,7 @@ setupButtonHover(toggleBtn)
 setupButtonHover(modeBtn)
 
 local scriptRunning = true
-local requestsPerSecond = 50 -- Ограничение до 50 запросов в секунду
+local requestsPerSecond = 5 -- Ограничение до 5 запросов в секунду
 
 local function closeGUI()
     scriptRunning = false
@@ -207,25 +207,24 @@ local function findRemoteObjects()
     print("📡 Auto-found " .. #foundRemotes .. " remote objects")
 end
 
--- МАКСИМАЛЬНЫЕ ЛАГИ БЕЗ КИКОВ (50 запросов/сек)
+-- МАКСИМАЛЬНЫЕ ЛАГИ БЕЗ КИКОВ (5-10 запросов/сек)
 local function sendLimitedRequests()
     if not LagEnabled or #foundRemotes == 0 then return end
     
     local requestsThisCycle = 0
-    local maxRequestsPerCycle = math.min(requestsPerSecond, 50) -- Максимум 50
+    local maxRequestsPerCycle = requestsPerSecond
     
-    -- Используем все найденные Remote объекты, но ограничиваем количество
-    for i, remote in pairs(foundRemotes) do
+    -- Используем только несколько Remote объектов за раз
+    for i = 1, math.min(3, #foundRemotes) do
         if not LagEnabled or requestsThisCycle >= maxRequestsPerCycle then break end
         
+        local remote = foundRemotes[math.random(1, #foundRemotes)]
         pcall(function()
             if remote:IsA("RemoteEvent") then
-                -- Легкие данные для безопасности
+                -- Очень легкие данные
                 local safeData = {
-                    math.random(1, 100),
-                    "action_" .. math.random(1, 10),
-                    Vector3.new(math.random(-10, 10), 0, math.random(-10, 10)),
-                    {x = math.random(1, 10), y = math.random(1, 10)},
+                    math.random(1, 10),
+                    "action_" .. math.random(1, 5),
                     true,
                     false
                 }
@@ -236,33 +235,31 @@ local function sendLimitedRequests()
                 requestsThisCycle = requestsThisCycle + 1
                 
             elseif remote:IsA("RemoteFunction") then
-                remote:InvokeServer("request_" .. math.random(1, 100), math.random(1, 100))
+                remote:InvokeServer("request_" .. math.random(1, 10))
                 requestCount = requestCount + 1
                 requestsThisCycle = requestsThisCycle + 1
             end
         end)
         
-        -- Задержка для ограничения скорости
-        if requestsThisCycle % 10 == 0 then -- Каждые 10 запросов небольшая пауза
-            wait(0.01)
-        end
+        -- Задержка между каждым запросом
+        wait(0.05)
     end
 end
 
 -- Переключение режима скорости
 modeBtn.MouseButton1Click:Connect(function()
-    if requestsPerSecond == 50 then
-        requestsPerSecond = 25 -- Медленный режим
-        modeBtn.Text = "25/SEC MODE"
-        modeBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 200)
-        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 25/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
-        print("🐢 Slow mode enabled - 25 requests/sec")
+    if requestsPerSecond == 5 then
+        requestsPerSecond = 10 -- Быстрый режим
+        modeBtn.Text = "10/SEC MODE"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 60)
+        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 10/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
+        print("⚡ Fast mode enabled - 10 requests/sec")
     else
-        requestsPerSecond = 50 -- Нормальный режим
-        modeBtn.Text = "50/SEC MODE"
+        requestsPerSecond = 5 -- Медленный режим
+        modeBtn.Text = "5/SEC MODE"
         modeBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
-        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 50/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
-        print("⚡ Normal mode enabled - 50 requests/sec")
+        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 5/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
+        print("🐢 Slow mode enabled - 5 requests/sec")
     end
 end)
 
@@ -313,19 +310,19 @@ spawn(function()
             sendLimitedRequests()
             statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
             
-            -- Фиксированная задержка для точного контроля скорости
-            wait(0.1) -- 10 циклов в секунду = ~50 запросов/сек
+            -- Большая задержка между циклами
+            wait(0.3) -- Медленные циклы
         else
             wait(0.5)
         end
     end
 end)
 
--- Автоматический поиск Remote каждые 10 секунд
+-- Автоматический поиск Remote каждые 15 секунд
 spawn(function()
     while scriptRunning do
         findRemoteObjects()
-        wait(10)
+        wait(15)
     end
 end)
 
@@ -338,5 +335,5 @@ end)
 print("💥💥💥 MAXIMUM SERVER LAG LOADED!")
 print("📡 Auto-found " .. #foundRemotes .. " remote objects")
 print("🎮 Click MAX LAG ON or press L to start")
-print("⚡ Normal mode: 50 requests/sec (safe)")
-print("🐢 Slow mode: 25 requests/sec (very safe)")
+print("🐢 Slow mode: 5 requests/sec (very safe)")
+print("⚡ Fast mode: 10 requests/sec (safe)")
