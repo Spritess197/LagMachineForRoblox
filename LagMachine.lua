@@ -1,4 +1,4 @@
--- EXTREME LAG MACHINE - L KEY TOGGLE (INTENSITY 2000)
+-- EXTREME LAG MACHINE + SUPER FAST RESPAWN
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -7,6 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 -- Настройки
 local LagEnabled = false
 local LagIntensity = 500
+local FastRespawnEnabled = false
 
 -- Создаем GUI
 local screenGui = Instance.new("ScreenGui")
@@ -16,7 +17,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 200)
+mainFrame.Size = UDim2.new(0, 320, 0, 220)
 mainFrame.Position = UDim2.new(0, 400, 0, 20)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainFrame.BackgroundTransparency = 0.1
@@ -145,7 +146,7 @@ statusLabel.Parent = intensitySection
 
 -- Buttons
 local buttonsFrame = Instance.new("Frame")
-buttonsFrame.Size = UDim2.new(1, 0, 0, 80)
+buttonsFrame.Size = UDim2.new(1, 0, 0, 90)
 buttonsFrame.Position = UDim2.new(0, 0, 0, 90)
 buttonsFrame.BackgroundTransparency = 1
 buttonsFrame.Parent = content
@@ -153,7 +154,7 @@ buttonsFrame.Parent = content
 -- Info label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 1, 0)
-infoLabel.Text = "Press L to toggle extreme lag\n100-500 = Heavy lag\n500-1000 = Extreme lag\n1000-2000 = CRASH level"
+infoLabel.Text = "Press L to toggle extreme lag\n⚡ SUPER FAST RESPAWN ENABLED\n100-500 = Heavy lag\n500-1000 = Extreme lag\n1000-2000 = CRASH level"
 infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextSize = 10
@@ -173,7 +174,7 @@ end)
 intensityInput.FocusLost:Connect(function()
     local newIntensity = tonumber(intensityInput.Text)
     if newIntensity and newIntensity > 0 then
-        LagIntensity = math.min(newIntensity, 2000) -- Максимум 2000!
+        LagIntensity = math.min(newIntensity, 2000)
         intensityInput.Text = tostring(LagIntensity)
         print("📊 Lag intensity updated: " .. LagIntensity)
     end
@@ -210,14 +211,22 @@ end)
 -- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ L
 local function toggleLag()
     LagEnabled = not LagEnabled
+    FastRespawnEnabled = LagEnabled -- Включаем быстрый респавн вместе с лагами
     
     if LagEnabled then
         statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
         statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
         print("💥💥💥 EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
+        print("⚡ SUPER FAST RESPAWN ENABLED!")
+        
+        -- Немедленно убиваем персонажа для демонстрации
+        if LocalPlayer.Character then
+            LocalPlayer.Character:BreakJoints()
+        end
     else
         statusLabel.Text = "Status: DISABLED (Press L)"
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        FastRespawnEnabled = false
         print("✅ Extreme lag deactivated")
     end
 end
@@ -231,42 +240,59 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ ДО 2000
+-- СИСТЕМА СУПЕР-БЫСТРОГО РЕСПАВНА
+local respawnCount = 0
+local lastRespawnTime = 0
+
+local function superFastRespawn()
+    if not FastRespawnEnabled then return end
+    
+    local currentTime = tick()
+    
+    -- Респавнимся каждые 0.1 секунды
+    if currentTime - lastRespawnTime > 0.1 then
+        respawnCount = respawnCount + 1
+        
+        -- Способ 1: Через Humanoid (самый быстрый)
+        if LocalPlayer.Character then
+            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Health = 0
+            else
+                LocalPlayer.Character:BreakJoints()
+            end
+        end
+        
+        -- Способ 2: Через официальный респавн
+        LocalPlayer:LoadCharacter()
+        
+        lastRespawnTime = currentTime
+        
+        if respawnCount % 10 == 0 then
+            print("⚡ RESPAWN #" .. respawnCount .. " - ULTRA FAST!")
+        end
+    end
+end
+
+-- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ
 local extremeObjects = {}
 local memoryHogs = {}
-local cpuTasks = {}
 
 local function createMemoryApocalypse()
     if not LagEnabled then return end
     
-    -- Апокалипсис памяти - в 4 раза больше данных
     for i = 1, math.floor(LagIntensity / 5) do
         memoryHogs[i] = {
             data = string.rep("EXTREME_LAG_" .. i, 10000),
-            nested = {},
-            megaNested = {}
+            nested = {}
         }
         for j = 1, 1000 do
             memoryHogs[i].nested[j] = {
                 moreData = string.rep("NESTED_LAG", 1000),
-                numbers = {},
-                strings = {}
+                numbers = {}
             }
             for k = 1, 100 do
                 memoryHogs[i].nested[j].numbers[k] = math.random(1, 1000000)
-                memoryHogs[i].nested[j].strings[k] = string.rep("LAG", 100)
-            end
-        end
-        for j = 1, 100 do
-            memoryHogs[i].megaNested[j] = {
-                extremeData = string.rep("MEGA_LAG", 5000),
-                arrays = {}
-            }
-            for k = 1, 50 do
-                memoryHogs[i].megaNested[j].arrays[k] = {}
-                for l = 1, 20 do
-                    memoryHogs[i].megaNested[j].arrays[k][l] = math.random(1, 1000000)
-                end
             end
         end
     end
@@ -275,23 +301,14 @@ end
 local function createCPUArmageddon()
     if not LagEnabled then return end
     
-    -- Армагеддон CPU - в 4 раза интенсивнее
     local computations = 0
     local startTime = tick()
     
-    while tick() - startTime < (LagIntensity / 200) and LagEnabled do
-        for i = 1, LagIntensity * 200 do
-            local x = math.sin(tick() * 10 + i) * math.cos(tick() * 8 - i)
-            local y = math.tan(x * 2) * math.atan(x * 3)
-            local z = math.log(math.abs(y) + 1) * math.exp(math.abs(x))
-            computations = computations + z * math.random(1, 100)
-        end
-        
-        -- Дополнительные тяжелые операции
-        for i = 1, math.floor(LagIntensity / 10) do
-            table.sort(memoryHogs, function(a, b)
-                return #a.data > #b.data
-            end)
+    while tick() - startTime < (LagIntensity / 300) and LagEnabled do
+        for i = 1, LagIntensity * 50 do
+            local x = math.sin(tick() + i) * math.cos(tick() - i)
+            local y = math.tan(x) * math.atan(x)
+            computations = computations + y
         end
     end
 end
@@ -299,55 +316,39 @@ end
 local function createRenderCataclysm()
     if not LagEnabled then return end
     
-    -- Катаклизм рендеринга - в 4 раза больше объектов
-    for i = 1, math.floor(LagIntensity / 2) do
+    for i = 1, math.floor(LagIntensity / 5) do
         local part = Instance.new("Part")
-        part.Size = Vector3.new(0.2, 0.2, 0.2)
+        part.Size = Vector3.new(0.3, 0.3, 0.3)
         part.Position = Vector3.new(
-            math.random(-100, 100),
-            math.random(5, 50), 
-            math.random(-100, 100)
+            math.random(-50, 50),
+            math.random(5, 30), 
+            math.random(-50, 50)
         )
         part.Anchored = false
         part.Material = Enum.Material.Neon
         part.BrickColor = BrickColor.random()
-        part.CanCollide = false
         part.Parent = workspace
         
         local fire = Instance.new("Fire")
-        fire.Size = math.random(5, 15)
-        fire.Heat = math.random(5, 15)
-        fire.Color = Color3.new(math.random(), math.random(), math.random())
-        fire.SecondaryColor = Color3.new(math.random(), math.random(), math.random())
+        fire.Size = math.random(3, 10)
+        fire.Heat = math.random(3, 10)
         fire.Parent = part
-        
-        local smoke = Instance.new("Smoke")
-        smoke.Size = math.random(5, 15)
-        smoke.Opacity = 0.8
-        smoke.Color = Color3.new(math.random(), math.random(), math.random())
-        smoke.Parent = part
-        
-        local sparkles = Instance.new("Sparkles")
-        sparkles.SparkleColor = Color3.new(math.random(), math.random(), math.random())
-        sparkles.Parent = part
         
         table.insert(extremeObjects, part)
         
-        -- Безумная анимация x2
         spawn(function()
             while part and part.Parent and LagEnabled do
                 part.RotVelocity = Vector3.new(
-                    math.random(-100, 100),
-                    math.random(-100, 100),
-                    math.random(-100, 100)
+                    math.random(-30, 30),
+                    math.random(-30, 30),
+                    math.random(-30, 30)
                 )
                 part.Velocity = Vector3.new(
-                    math.sin(tick() * 20) * 20,
-                    math.cos(tick() * 15) * 10,
-                    math.cos(tick() * 25) * 20
+                    math.sin(tick() * 5) * 5,
+                    math.cos(tick() * 4) * 3,
+                    math.cos(tick() * 6) * 5
                 )
-                part.BrickColor = BrickColor.random()
-                wait(0.005)
+                wait(0.01)
             end
         end)
     end
@@ -356,65 +357,40 @@ end
 local function createNetworkDoom()
     if not LagEnabled then return end
     
-    -- Сетевой ад - в 4 раза больше запросов
-    for i = 1, math.floor(LagIntensity / 5) do
+    for i = 1, math.floor(LagIntensity / 10) do
         spawn(function()
-            local requestCount = 0
             while LagEnabled do
-                for j = 1, 20 do
+                for j = 1, 5 do
                     spawn(function()
                         local start = tick()
-                        while tick() - start < 0.1 and LagEnabled do
+                        while tick() - start < 0.05 and LagEnabled do
                             local data = {}
-                            for k = 1, 200 do
-                                data[k] = {
-                                    number = math.random(1, 1000000),
-                                    string = string.rep("NETWORK_LAG", 10),
-                                    table = {math.random(1, 100), math.random(1, 100)}
-                                }
+                            for k = 1, 50 do
+                                data[k] = math.random(1, 1000000)
                             end
                         end
                     end)
                 end
-                requestCount = requestCount + 1
-                wait(0.005)
+                wait(0.01)
             end
         end)
     end
 end
 
-local function createInfiniteLoopHell()
-    if not LagEnabled then return end
-    
-    -- Ад бесконечных циклов - в 4 раза больше
-    for i = 1, math.floor(LagIntensity / 10) do
-        spawn(function()
-            local counter = 0
-            while LagEnabled do
-                counter = counter + 1
-                -- Бесконечный цикл максимальной интенсивности
-                for j = 1, 1000 do
-                    local x = math.random(1, 1000000)
-                    local y = math.random(1, 1000000)
-                    local _ = x * y / (x + y + 1)
-                end
-            end
-        end)
-    end
-end
-
--- Основной цикл экстремальных лагов
+-- Основной цикл экстремальных лагов и респавна
 spawn(function()
     while true do
         if LagEnabled then
-            -- Запускаем ВСЕ виды экстремальных лагов ОДНОВРЕМЕННО
+            -- Запускаем ВСЕ виды экстремальных лагов
             createMemoryApocalypse()
             createCPUArmageddon() 
             createRenderCataclysm()
             createNetworkDoom()
-            createInfiniteLoopHell()
             
-            wait(0.01) -- Минимальная пауза для максимальной нагрузки
+            -- АКТИВИРУЕМ СУПЕР-БЫСТРЫЙ РЕСПАВН
+            superFastRespawn()
+            
+            wait(0.03)
         else
             -- Очищаем когда выключено
             for _, obj in pairs(extremeObjects) do
@@ -424,16 +400,30 @@ spawn(function()
             end
             extremeObjects = {}
             memoryHogs = {}
-            cpuTasks = {}
             wait(0.5)
         end
     end
 end)
 
-print("💥💥💥 EXTREME LAG MACHINE 2000 LOADED!")
+-- Дополнительный супер-быстрый цикл респавна
+spawn(function()
+    while true do
+        if FastRespawnEnabled then
+            -- Дополнительные быстрые убийства персонажа
+            if LocalPlayer.Character and tick() - lastRespawnTime > 0.05 then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid and humanoid.Health > 0 then
+                    humanoid.Health = 0
+                    respawnCount = respawnCount + 1
+                    lastRespawnTime = tick()
+                end
+            end
+        end
+        wait(0.01) -- Сверхбыстрая проверка
+    end
+end)
+
+print("💥💥💥 EXTREME LAG + SUPER FAST RESPAWN LOADED!")
 print("🎮 Press L to toggle extreme lag")
-print("💀 Intensity levels:")
-print("   100-500 = Heavy lag")
-print("   500-1000 = Extreme lag") 
-print("   1000-2000 = INSTANT CRASH level")
-print("⚠️  WARNING: 1500+ may crash Roblox!")
+print("⚡ SUPER FAST RESPAWN: You will respawn incredibly fast!")
+print("💀 Intensity 500+ for maximum chaos!")
