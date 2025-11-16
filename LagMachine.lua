@@ -1,4 +1,4 @@
--- MAXIMUM SERVER LAG (Client-Side Methods)
+-- MAXIMUM SERVER LAG (Combined Methods)
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -82,7 +82,7 @@ sectionCorner.Parent = lagSection
 local lagTitle = Instance.new("TextLabel")
 lagTitle.Size = UDim2.new(1, -10, 0, 25)
 lagTitle.Position = UDim2.new(0, 10, 0, 5)
-lagTitle.Text = "Client-Side Extreme Lag"
+lagTitle.Text = "Combined Extreme Lag Methods"
 lagTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 lagTitle.BackgroundTransparency = 1
 lagTitle.TextSize = 12
@@ -93,7 +93,7 @@ lagTitle.Parent = lagSection
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -10, 0, 80)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nMethod: RenderStepper\nIntensity: LOW\nFPS: --"
+statusLabel.Text = "Status: DISABLED\nMethod: LIGHT+CALC\nIntensity: LOW\nFPS: --"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -128,7 +128,7 @@ end
 
 local toggleBtn = createActionButton(0, "EXTREME LAG ON", Color3.fromRGB(200, 60, 60))
 local intensityBtn = createActionButton(0.52, "INTENSITY: LOW", Color3.fromRGB(80, 120, 200))
-local methodBtn = createActionButton(0, "RENDER", Color3.fromRGB(120, 80, 200), 1)
+local methodBtn = createActionButton(0, "LIGHT+CALC", Color3.fromRGB(120, 80, 200), 1)
 
 methodBtn.Position = UDim2.new(0, 0, 0, 40)
 
@@ -149,7 +149,7 @@ setupButtonHover(intensityBtn)
 setupButtonHover(methodBtn)
 
 local scriptRunning = true
-local currentMethod = "render"
+local currentMethod = "light_calc"
 local connections = {}
 
 local function closeGUI()
@@ -191,51 +191,149 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- МЕТОД 1: РЕНДЕРИНГ ЛАГ
-local function startRenderLag()
-    local partCount = lagIntensity * 50
-    
-    connections.render = RunService.RenderStepped:Connect(function()
+-- КОМБИНИРОВАННЫЙ МЕТОД: LIGHTING + CALCULATION
+local function startCombinedLightCalc()
+    connections.combined = RunService.RenderStepped:Connect(function()
         if not LagEnabled then return end
         
-        -- Интенсивные математические вычисления
-        local calculations = 0
-        for i = 1, partCount * 10 do
-            calculations = calculations + math.sin(i * 0.1) * math.cos(i * 0.1) * math.tan(i * 0.01)
+        -- === ЧАСТЬ 1: ИНТЕНСИВНЫЕ ВЫЧИСЛЕНИЯ ===
+        local heavyCalc = 0
+        local calcMultiplier = lagIntensity * 500
+        
+        -- Очень тяжелые математические операции
+        for x = 1, calcMultiplier do
+            for y = 1, 20 do
+                heavyCalc = heavyCalc + 
+                    math.sin(x * y) * math.cos(x / y) * 
+                    math.tan(x + y) * math.log(math.abs(x - y) + 1)
+            end
         end
         
-        -- Создание и удаление объектов в реальном времени
-        for i = 1, math.min(5, partCount) do
+        -- Дополнительные вычисления с матрицами
+        local matrixCalc = 0
+        for i = 1, calcMultiplier * 2 do
+            matrixCalc = matrixCalc + 
+                math.sqrt(i) * math.exp(i * 0.001) * 
+                math.atan(i) * math.asin(math.random())
+        end
+        
+        -- Создание больших таблиц и операции с ними
+        local largeTable = {}
+        for i = 1, calcMultiplier do
+            largeTable[i] = {
+                x = math.random(1, 1000),
+                y = math.random(1, 1000), 
+                z = math.random(1, 1000),
+                value = math.sin(i) * math.cos(i) * math.tan(i * 0.1),
+                nested = {
+                    a = math.random(1, 100),
+                    b = math.random(1, 100),
+                    c = math.random(1, 100)
+                }
+            }
+        end
+        
+        -- Операции с таблицей
+        for i = 1, #largeTable do
+            largeTable[i].result = 
+                largeTable[i].x * largeTable[i].y * largeTable[i].z *
+                largeTable[i].nested.a * largeTable[i].nested.b * largeTable[i].nested.c
+        end
+        
+        -- === ЧАСТЬ 2: LIGHTING И ЭФФЕКТЫ ===
+        local lightMultiplier = lagIntensity * 3
+        
+        -- Быстрое изменение всех свойств освещения
+        Lighting.Brightness = math.random(1, 8)
+        Lighting.ClockTime = math.random(0, 24)
+        Lighting.Ambient = Color3.new(math.random(), math.random(), math.random())
+        Lighting.OutdoorAmbient = Color3.new(math.random(), math.random(), math.random())
+        Lighting.ColorShift_Bottom = Color3.new(math.random(), math.random(), math.random())
+        Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
+        Lighting.FogColor = Color3.new(math.random(), math.random(), math.random())
+        Lighting.FogEnd = math.random(100, 500)
+        Lighting.FogStart = math.random(0, 100)
+        
+        -- Создание множества источников света
+        for i = 1, lightMultiplier do
+            -- PointLight
+            local pointLight = Instance.new("PointLight")
+            pointLight.Brightness = math.random(5, 15)
+            pointLight.Range = math.random(15, 30)
+            pointLight.Color = Color3.new(math.random(), math.random(), math.random())
+            pointLight.Shadows = true
+            pointLight.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(pointLight, 0.3)
+            
+            -- SpotLight
+            local spotLight = Instance.new("SpotLight")
+            spotLight.Brightness = math.random(3, 10)
+            spotLight.Range = math.random(10, 25)
+            spotLight.Angle = math.random(10, 45)
+            spotLight.Color = Color3.new(math.random(), math.random(), math.random())
+            spotLight.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(spotLight, 0.25)
+            
+            -- SurfaceLight
+            local surfaceLight = Instance.new("SurfaceLight")
+            surfaceLight.Brightness = math.random(2, 8)
+            surfaceLight.Range = math.random(8, 20)
+            surfaceLight.Angle = math.random(5, 30)
+            surfaceLight.Color = Color3.new(math.random(), math.random(), math.random())
+            surfaceLight.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(surfaceLight, 0.2)
+        end
+        
+        -- Быстрое создание/удаление партиклов
+        for i = 1, math.min(2, lightMultiplier) do
             local part = Instance.new("Part")
-            part.Size = Vector3.new(1, 1, 1)
+            part.Size = Vector3.new(0.5, 0.5, 0.5)
             part.Position = Vector3.new(
-                math.random(-100, 100),
-                math.random(10, 50),
-                math.random(-100, 100)
+                math.random(-20, 20),
+                math.random(5, 15),
+                math.random(-20, 20)
             )
             part.Anchored = true
             part.CanCollide = false
             part.Material = Enum.Material.Neon
             part.BrickColor = BrickColor.random()
+            
+            -- Добавляем свечение
+            local light = Instance.new("PointLight")
+            light.Brightness = 10
+            light.Range = 10
+            light.Color = part.BrickColor.Color
+            light.Parent = part
+            
             part.Parent = workspace
-            game:GetService("Debris"):AddItem(part, 0.1)
+            game:GetService("Debris"):AddItem(part, 0.4)
+        end
+        
+        -- Дополнительные эффекты пост-обработки (если доступны)
+        if Lighting:FindFirstChild("Blur") then
+            Lighting.Blur.Size = math.random(1, 10)
+        end
+        if Lighting:FindFirstChild("ColorCorrection") then
+            Lighting.ColorCorrection.Contrast = math.random(-1, 1)
+            Lighting.ColorCorrection.Brightness = math.random(-1, 1)
+            Lighting.ColorCorrection.Saturation = math.random(-1, 1)
         end
     end)
 end
 
--- МЕТОД 2: ФИЗИКА ЛАГ
-local function startPhysicsLag()
-    local parts = {}
+-- МЕТОД 2: RENDER + PHYSICS (альтернативный комбинированный)
+local function startRenderPhysics()
+    local physicsParts = {}
     
-    -- Создаем много физических частей
-    for i = 1, lagIntensity * 30 do
+    -- Создаем физические части
+    for i = 1, lagIntensity * 20 do
         local part = Instance.new("Part")
-        part.Name = "PhysicsLag_" .. i
+        part.Name = "PhysicsPart_" .. i
         part.Size = Vector3.new(2, 2, 2)
         part.Position = Vector3.new(
-            math.random(-50, 50),
-            math.random(20, 40),
-            math.random(-50, 50)
+            math.random(-30, 30),
+            math.random(15, 35),
+            math.random(-30, 30)
         )
         part.Anchored = false
         part.CanCollide = true
@@ -245,88 +343,64 @@ local function startPhysicsLag()
         
         local bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Velocity = Vector3.new(
-            math.random(-20, 20),
-            math.random(5, 15),
-            math.random(-20, 20)
+            math.random(-25, 25),
+            math.random(8, 20),
+            math.random(-25, 25)
         )
         bodyVelocity.Parent = part
         
-        table.insert(parts, part)
+        table.insert(physicsParts, part)
     end
     
-    connections.physics = RunService.Heartbeat:Connect(function()
+    connections.renderPhysics = RunService.RenderStepped:Connect(function()
         if not LagEnabled then return end
         
-        -- Постоянно обновляем физику
-        for _, part in pairs(parts) do
+        -- Интенсивные вычисления для рендера
+        local renderCalc = 0
+        for i = 1, lagIntensity * 1000 do
+            renderCalc = renderCalc + 
+                math.sin(i * 0.5) * math.cos(i * 0.3) * 
+                math.atan(i * 0.1) * math.log(i + 1)
+        end
+        
+        -- Обновление физики всех частей
+        for _, part in pairs(physicsParts) do
             if part and part.Parent then
                 local bodyVelocity = part:FindFirstChildOfClass("BodyVelocity")
                 if bodyVelocity then
                     bodyVelocity.Velocity = Vector3.new(
-                        math.random(-30, 30),
-                        math.random(5, 25),
-                        math.random(-30, 30)
+                        math.random(-35, 35),
+                        math.random(10, 25),
+                        math.random(-35, 35)
                     )
                 end
             end
         end
+        
+        -- Создание временных частиц
+        for i = 1, lagIntensity * 2 do
+            local particle = Instance.new("Part")
+            particle.Size = Vector3.new(0.3, 0.3, 0.3)
+            particle.Position = Vector3.new(
+                math.random(-15, 15),
+                math.random(5, 10),
+                math.random(-15, 15)
+            )
+            particle.Anchored = true
+            particle.CanCollide = false
+            particle.Material = Enum.Material.Neon
+            particle.BrickColor = BrickColor.random()
+            particle.Parent = workspace
+            game:GetService("Debris"):AddItem(particle, 0.2)
+        end
     end)
     
-    -- Очистка через 10 секунд
-    delay(10, function()
-        for _, part in pairs(parts) do
+    -- Очистка физических частей через время
+    delay(15, function()
+        for _, part in pairs(physicsParts) do
             if part and part.Parent then
                 part:Destroy()
             end
-        end
-    end)
-end
-
--- МЕТОД 3: СВЕТ И ЭФФЕКТЫ ЛАГ
-local function startLightingLag()
-    connections.lighting = RunService.RenderStepped:Connect(function()
-        if not LagEnabled then return end
-        
-        -- Быстро меняем свойства освещения
-        Lighting.Brightness = math.random(1, 5)
-        Lighting.ClockTime = math.random(0, 24)
-        Lighting.ColorShift_Bottom = Color3.new(math.random(), math.random(), math.random())
-        Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
-        
-        -- Создаем временные источники света
-        for i = 1, lagIntensity do
-            local light = Instance.new("PointLight")
-            light.Brightness = math.random(5, 10)
-            light.Range = math.random(10, 20)
-            light.Color = Color3.new(math.random(), math.random(), math.random())
-            light.Parent = workspace.Terrain
-            game:GetService("Debris"):AddItem(light, 0.2)
-        end
-    end)
-end
-
--- МЕТОД 4: ИНТЕНСИВНЫЕ ВЫЧИСЛЕНИЯ
-local function startCalculationLag()
-    connections.calculation = RunService.Heartbeat:Connect(function()
-        if not LagEnabled then return end
-        
-        -- Очень интенсивные вычисления
-        local heavyCalc = 0
-        for x = 1, lagIntensity * 1000 do
-            for y = 1, 10 do
-                heavyCalc = heavyCalc + math.sqrt(x * y) * math.log(x + y)
-            end
-        end
-        
-        -- Дополнительные операции с таблицами
-        local largeTable = {}
-        for i = 1, lagIntensity * 500 do
-            largeTable[i] = {
-                x = math.random(1, 1000),
-                y = math.random(1, 1000),
-                z = math.random(1, 1000),
-                value = math.sin(i) * math.cos(i)
-            }
         end
     end)
 end
@@ -340,7 +414,7 @@ local function cleanupAll()
     
     -- Удаляем все созданные части
     for _, obj in pairs(workspace:GetChildren()) do
-        if string.find(obj.Name, "PhysicsLag_") or string.find(obj.Name, "RenderLag_") then
+        if string.find(obj.Name, "PhysicsPart_") then
             obj:Destroy()
         end
     end
@@ -353,7 +427,7 @@ intensityBtn.MouseButton1Click:Connect(function()
         intensityBtn.Text = "INTENSITY: MEDIUM"
         intensityBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 60)
     elseif lagIntensity == 3 then
-        lagIntensity = 5
+        lagIntensity = 6
         intensityBtn.Text = "INTENSITY: HIGH"
         intensityBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 60)
     else
@@ -371,21 +445,13 @@ end)
 methodBtn.MouseButton1Click:Connect(function()
     cleanupAll()
     
-    if currentMethod == "render" then
-        currentMethod = "physics"
-        methodBtn.Text = "PHYSICS"
+    if currentMethod == "light_calc" then
+        currentMethod = "render_physics"
+        methodBtn.Text = "RENDER+PHYSICS"
         methodBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 80)
-    elseif currentMethod == "physics" then
-        currentMethod = "lighting"
-        methodBtn.Text = "LIGHTING"
-        methodBtn.BackgroundColor3 = Color3.fromRGB(180, 80, 200)
-    elseif currentMethod == "lighting" then
-        currentMethod = "calculation"
-        methodBtn.Text = "CALCULATION"
-        methodBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
     else
-        currentMethod = "render"
-        methodBtn.Text = "RENDER"
+        currentMethod = "light_calc"
+        methodBtn.Text = "LIGHT+CALC"
         methodBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 200)
     end
     
@@ -403,14 +469,10 @@ end)
 local function startCurrentMethod()
     cleanupAll()
     
-    if currentMethod == "render" then
-        startRenderLag()
-    elseif currentMethod == "physics" then
-        startPhysicsLag()
-    elseif currentMethod == "lighting" then
-        startLightingLag()
-    elseif currentMethod == "calculation" then
-        startCalculationLag()
+    if currentMethod == "light_calc" then
+        startCombinedLightCalc()
+    elseif currentMethod == "render_physics" then
+        startRenderPhysics()
     end
 end
 
@@ -426,7 +488,7 @@ toggleBtn.MouseButton1Click:Connect(function()
         toggleBtn.Text = "EXTREME LAG OFF"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
         startCurrentMethod()
-        print("💥 EXTREME LAG ACTIVATED! Method: " .. currentMethod .. " Intensity: " .. lagIntensity)
+        print("💥 EXTREME COMBINED LAG ACTIVATED! Method: " .. currentMethod .. " Intensity: " .. lagIntensity)
     else
         statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nIntensity: %s\nFPS: NORMAL", 
             currentMethod:upper(),
@@ -489,10 +551,9 @@ spawn(function()
     end
 end)
 
-print("💥💥💥 EXTREME CLIENT-SIDE LAG LOADED!")
+print("💥💥💥 EXTREME COMBINED LAG METHODS LOADED!")
 print("🎮 Click EXTREME LAG ON or press L to start")
-print("⚡ Render - Intensive rendering calculations")
-print("🔷 Physics - Physics objects with BodyVelocity") 
-print("💡 Lighting - Rapid lighting changes")
-print("🧮 Calculation - Heavy mathematical computations")
-print("🎚️ Adjust intensity for more/less lag")
+print("💡 LIGHT+CALC - Lighting effects + Heavy calculations")
+print("⚡ RENDER+PHYSICS - Rendering + Physics objects")
+print("🎚️ Adjust intensity for extreme lag")
+print("⚠️ Warning: May cause significant FPS drops!")
