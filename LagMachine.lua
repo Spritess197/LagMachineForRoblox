@@ -1,11 +1,12 @@
--- MAXIMUM SERVER LAG (Alternative Methods)
+-- MAXIMUM SERVER LAG (Client-Side Methods)
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
 
 local LagEnabled = false
-local requestCount = 0
+local lagIntensity = 1
 
 -- GUI
 local screenGui = Instance.new("ScreenGui")
@@ -15,7 +16,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainContainer = Instance.new("Frame")
-mainContainer.Size = UDim2.new(0, 320, 0, 200)
+mainContainer.Size = UDim2.new(0, 350, 0, 250)
 mainContainer.Position = UDim2.new(0, 400, 0, 20)
 mainContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainContainer.BackgroundTransparency = 0.1
@@ -39,7 +40,7 @@ headerCorner.Parent = header
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.7, 0, 1, 0)
 title.Position = UDim2.new(0, 15, 0, 0)
-title.Text = "MAX LAG MODE"
+title.Text = "EXTREME LAG MODE"
 title.TextColor3 = Color3.fromRGB(220, 220, 220)
 title.BackgroundTransparency = 1
 title.TextSize = 16
@@ -69,7 +70,7 @@ content.BackgroundTransparency = 1
 content.Parent = mainContainer
 
 local lagSection = Instance.new("Frame")
-lagSection.Size = UDim2.new(1, 0, 0, 120)
+lagSection.Size = UDim2.new(1, 0, 0, 150)
 lagSection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 lagSection.BorderSizePixel = 0
 lagSection.Parent = content
@@ -81,7 +82,7 @@ sectionCorner.Parent = lagSection
 local lagTitle = Instance.new("TextLabel")
 lagTitle.Size = UDim2.new(1, -10, 0, 25)
 lagTitle.Position = UDim2.new(0, 10, 0, 5)
-lagTitle.Text = "Alternative Lag Methods"
+lagTitle.Text = "Client-Side Extreme Lag"
 lagTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 lagTitle.BackgroundTransparency = 1
 lagTitle.TextSize = 12
@@ -90,9 +91,9 @@ lagTitle.TextXAlignment = Enum.TextXAlignment.Left
 lagTitle.Parent = lagSection
 
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -10, 0, 60)
+statusLabel.Size = UDim2.new(1, -10, 0, 80)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nMethod: Physics\nMode: Safe"
+statusLabel.Text = "Status: DISABLED\nMethod: RenderStepper\nIntensity: LOW\nFPS: --"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -101,14 +102,14 @@ statusLabel.TextWrapped = true
 statusLabel.Parent = lagSection
 
 local actionsFrame = Instance.new("Frame")
-actionsFrame.Size = UDim2.new(1, 0, 0, 40)
-actionsFrame.Position = UDim2.new(0, 0, 0, 130)
+actionsFrame.Size = UDim2.new(1, 0, 0, 50)
+actionsFrame.Position = UDim2.new(0, 0, 0, 160)
 actionsFrame.BackgroundTransparency = 1
 actionsFrame.Parent = content
 
-local function createActionButton(xPosition, text, color)
+local function createActionButton(xPosition, text, color, sizeX)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.48, 0, 0, 35)
+    btn.Size = UDim2.new(sizeX or 0.48, 0, 0, 35)
     btn.Position = UDim2.new(xPosition, 0, 0, 0)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -125,8 +126,11 @@ local function createActionButton(xPosition, text, color)
     return btn
 end
 
-local toggleBtn = createActionButton(0, "LAG ON", Color3.fromRGB(200, 60, 60))
-local modeBtn = createActionButton(0.52, "PHYSICS", Color3.fromRGB(80, 120, 200))
+local toggleBtn = createActionButton(0, "EXTREME LAG ON", Color3.fromRGB(200, 60, 60))
+local intensityBtn = createActionButton(0.52, "INTENSITY: LOW", Color3.fromRGB(80, 120, 200))
+local methodBtn = createActionButton(0, "RENDER", Color3.fromRGB(120, 80, 200), 1)
+
+methodBtn.Position = UDim2.new(0, 0, 0, 40)
 
 -- Функции для кнопок
 local function setupButtonHover(button)
@@ -141,13 +145,19 @@ end
 
 setupButtonHover(closeBtn)
 setupButtonHover(toggleBtn)
-setupButtonHover(modeBtn)
+setupButtonHover(intensityBtn)
+setupButtonHover(methodBtn)
 
 local scriptRunning = true
-local currentMethod = "physics" -- physics, parts, network
+local currentMethod = "render"
+local connections = {}
 
 local function closeGUI()
     scriptRunning = false
+    -- Отключаем все соединения
+    for _, conn in pairs(connections) do
+        conn:Disconnect()
+    end
     screenGui:Destroy()
 end
 
@@ -181,20 +191,51 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- МЕТОД 1: ФИЗИЧЕСКИЕ ЛАГИ
-local physicsParts = {}
-local function createPhysicsLag()
-    if not LagEnabled then return end
+-- МЕТОД 1: РЕНДЕРИНГ ЛАГ
+local function startRenderLag()
+    local partCount = lagIntensity * 50
     
-    -- Создаем физические части
-    for i = 1, 5 do
+    connections.render = RunService.RenderStepped:Connect(function()
+        if not LagEnabled then return end
+        
+        -- Интенсивные математические вычисления
+        local calculations = 0
+        for i = 1, partCount * 10 do
+            calculations = calculations + math.sin(i * 0.1) * math.cos(i * 0.1) * math.tan(i * 0.01)
+        end
+        
+        -- Создание и удаление объектов в реальном времени
+        for i = 1, math.min(5, partCount) do
+            local part = Instance.new("Part")
+            part.Size = Vector3.new(1, 1, 1)
+            part.Position = Vector3.new(
+                math.random(-100, 100),
+                math.random(10, 50),
+                math.random(-100, 100)
+            )
+            part.Anchored = true
+            part.CanCollide = false
+            part.Material = Enum.Material.Neon
+            part.BrickColor = BrickColor.random()
+            part.Parent = workspace
+            game:GetService("Debris"):AddItem(part, 0.1)
+        end
+    end)
+end
+
+-- МЕТОД 2: ФИЗИКА ЛАГ
+local function startPhysicsLag()
+    local parts = {}
+    
+    -- Создаем много физических частей
+    for i = 1, lagIntensity * 30 do
         local part = Instance.new("Part")
-        part.Name = "LagPart_" .. i
+        part.Name = "PhysicsLag_" .. i
         part.Size = Vector3.new(2, 2, 2)
         part.Position = Vector3.new(
-            math.random(-20, 20),
-            math.random(10, 30),
-            math.random(-20, 20)
+            math.random(-50, 50),
+            math.random(20, 40),
+            math.random(-50, 50)
         )
         part.Anchored = false
         part.CanCollide = true
@@ -202,154 +243,199 @@ local function createPhysicsLag()
         part.BrickColor = BrickColor.random()
         part.Parent = workspace
         
-        -- Добавляем физику
         local bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Velocity = Vector3.new(
-            math.random(-50, 50),
-            math.random(10, 30),
-            math.random(-50, 50)
+            math.random(-20, 20),
+            math.random(5, 15),
+            math.random(-20, 20)
         )
         bodyVelocity.Parent = part
         
-        table.insert(physicsParts, part)
+        table.insert(parts, part)
     end
     
-    -- Обновляем физику
-    for _, part in pairs(physicsParts) do
-        if part and part.Parent then
-            local bodyVelocity = part:FindFirstChildOfClass("BodyVelocity")
-            if bodyVelocity then
-                bodyVelocity.Velocity = Vector3.new(
-                    math.random(-30, 30),
-                    math.random(5, 15),
-                    math.random(-30, 30)
-                )
+    connections.physics = RunService.Heartbeat:Connect(function()
+        if not LagEnabled then return end
+        
+        -- Постоянно обновляем физику
+        for _, part in pairs(parts) do
+            if part and part.Parent then
+                local bodyVelocity = part:FindFirstChildOfClass("BodyVelocity")
+                if bodyVelocity then
+                    bodyVelocity.Velocity = Vector3.new(
+                        math.random(-30, 30),
+                        math.random(5, 25),
+                        math.random(-30, 30)
+                    )
+                end
             end
         end
-    end
+    end)
     
-    requestCount = requestCount + 1
+    -- Очистка через 10 секунд
+    delay(10, function()
+        for _, part in pairs(parts) do
+            if part and part.Parent then
+                part:Destroy()
+            end
+        end
+    end)
 end
 
--- МЕТОД 2: МАССОВОЕ СОЗДАНИЕ ЧАСТЕЙ
-local createdParts = {}
-local function createMassParts()
-    if not LagEnabled then return end
-    
-    -- Создаем много статических частей
-    for i = 1, 10 do
-        local part = Instance.new("Part")
-        part.Name = "StaticPart_" .. i
-        part.Size = Vector3.new(1, 1, 1)
-        part.Position = Vector3.new(
-            math.random(-50, 50),
-            math.random(5, 20),
-            math.random(-50, 50)
-        )
-        part.Anchored = true
-        part.CanCollide = true
-        part.Material = Enum.Material.Plastic
-        part.BrickColor = BrickColor.random()
-        part.Parent = workspace
+-- МЕТОД 3: СВЕТ И ЭФФЕКТЫ ЛАГ
+local function startLightingLag()
+    connections.lighting = RunService.RenderStepped:Connect(function()
+        if not LagEnabled then return end
         
-        table.insert(createdParts, part)
-    end
-    
-    requestCount = requestCount + 1
+        -- Быстро меняем свойства освещения
+        Lighting.Brightness = math.random(1, 5)
+        Lighting.ClockTime = math.random(0, 24)
+        Lighting.ColorShift_Bottom = Color3.new(math.random(), math.random(), math.random())
+        Lighting.ColorShift_Top = Color3.new(math.random(), math.random(), math.random())
+        
+        -- Создаем временные источники света
+        for i = 1, lagIntensity do
+            local light = Instance.new("PointLight")
+            light.Brightness = math.random(5, 10)
+            light.Range = math.random(10, 20)
+            light.Color = Color3.new(math.random(), math.random(), math.random())
+            light.Parent = workspace.Terrain
+            game:GetService("Debris"):AddItem(light, 0.2)
+        end
+    end)
 end
 
--- МЕТОД 3: СЕТЕВЫЕ ЛАГИ (без спама Remote)
-local function createNetworkLag()
-    if not LagEnabled then return end
-    
-    -- Легкие запросы к серверу с большими интервалами
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            -- Меняем небольшие свойства
-            humanoid.WalkSpeed = math.random(16, 18)
-            humanoid.JumpPower = math.random(50, 52)
+-- МЕТОД 4: ИНТЕНСИВНЫЕ ВЫЧИСЛЕНИЯ
+local function startCalculationLag()
+    connections.calculation = RunService.Heartbeat:Connect(function()
+        if not LagEnabled then return end
+        
+        -- Очень интенсивные вычисления
+        local heavyCalc = 0
+        for x = 1, lagIntensity * 1000 do
+            for y = 1, 10 do
+                heavyCalc = heavyCalc + math.sqrt(x * y) * math.log(x + y)
+            end
         end
         
-        -- Легкое движение
-        character:SetPrimaryPartCFrame(
-            character:GetPrimaryPartCFrame() * CFrame.new(0, 0.1, 0)
-        )
-    end
-    
-    requestCount = requestCount + 1
+        -- Дополнительные операции с таблицами
+        local largeTable = {}
+        for i = 1, lagIntensity * 500 do
+            largeTable[i] = {
+                x = math.random(1, 1000),
+                y = math.random(1, 1000),
+                z = math.random(1, 1000),
+                value = math.sin(i) * math.cos(i)
+            }
+        end
+    end)
 end
 
--- МЕТОД 4: ЛАГИ ЧЕРЕЗ ПЕТЛЮ ОБНОВЛЕНИЯ
-local function updateLoopLag()
-    if not LagEnabled then return end
-    
-    -- Интенсивные вычисления на клиенте
-    local calculations = 0
-    for i = 1, 1000 do
-        calculations = calculations + math.sin(i) * math.cos(i)
+-- Очистка всех методов
+local function cleanupAll()
+    for _, conn in pairs(connections) do
+        conn:Disconnect()
     end
+    connections = {}
     
-    requestCount = requestCount + 1
+    -- Удаляем все созданные части
+    for _, obj in pairs(workspace:GetChildren()) do
+        if string.find(obj.Name, "PhysicsLag_") or string.find(obj.Name, "RenderLag_") then
+            obj:Destroy()
+        end
+    end
 end
 
--- Очистка созданных объектов
-local function cleanupObjects()
-    for _, part in pairs(physicsParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
+-- Переключение интенсивности
+intensityBtn.MouseButton1Click:Connect(function()
+    if lagIntensity == 1 then
+        lagIntensity = 3
+        intensityBtn.Text = "INTENSITY: MEDIUM"
+        intensityBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 60)
+    elseif lagIntensity == 3 then
+        lagIntensity = 5
+        intensityBtn.Text = "INTENSITY: HIGH"
+        intensityBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 60)
+    else
+        lagIntensity = 1
+        intensityBtn.Text = "INTENSITY: LOW"
+        intensityBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
     end
-    for _, part in pairs(createdParts) do
-        if part and part.Parent then
-            part:Destroy()
-        end
-    end
-    physicsParts = {}
-    createdParts = {}
-end
+    statusLabel.Text = string.format("Status: %s\nMethod: %s\nIntensity: %s\nFPS: --", 
+        LagEnabled and "ENABLED" or "DISABLED", 
+        currentMethod:upper(),
+        lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH")
+end)
 
 -- Переключение методов
-modeBtn.MouseButton1Click:Connect(function()
-    if currentMethod == "physics" then
-        currentMethod = "parts"
-        modeBtn.Text = "PARTS"
-        modeBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 60)
-        statusLabel.Text = string.format("Status: %s\nMethod: Parts\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED")
-        print("🔷 Parts mode - mass part creation")
-    elseif currentMethod == "parts" then
-        currentMethod = "network"
-        modeBtn.Text = "NETWORK"
-        modeBtn.BackgroundColor3 = Color3.fromRGB(120, 200, 80)
-        statusLabel.Text = string.format("Status: %s\nMethod: Network\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED")
-        print("🌐 Network mode - light network requests")
-    else
+methodBtn.MouseButton1Click:Connect(function()
+    cleanupAll()
+    
+    if currentMethod == "render" then
         currentMethod = "physics"
-        modeBtn.Text = "PHYSICS"
-        modeBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
-        statusLabel.Text = string.format("Status: %s\nMethod: Physics\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED")
-        print("⚡ Physics mode - physics calculations")
+        methodBtn.Text = "PHYSICS"
+        methodBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 80)
+    elseif currentMethod == "physics" then
+        currentMethod = "lighting"
+        methodBtn.Text = "LIGHTING"
+        methodBtn.BackgroundColor3 = Color3.fromRGB(180, 80, 200)
+    elseif currentMethod == "lighting" then
+        currentMethod = "calculation"
+        methodBtn.Text = "CALCULATION"
+        methodBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+    else
+        currentMethod = "render"
+        methodBtn.Text = "RENDER"
+        methodBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 200)
+    end
+    
+    statusLabel.Text = string.format("Status: %s\nMethod: %s\nIntensity: %s\nFPS: --", 
+        LagEnabled and "ENABLED" or "DISABLED", 
+        currentMethod:upper(),
+        lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH")
+    
+    if LagEnabled then
+        startCurrentMethod()
     end
 end)
+
+-- Запуск текущего метода
+local function startCurrentMethod()
+    cleanupAll()
+    
+    if currentMethod == "render" then
+        startRenderLag()
+    elseif currentMethod == "physics" then
+        startPhysicsLag()
+    elseif currentMethod == "lighting" then
+        startLightingLag()
+    elseif currentMethod == "calculation" then
+        startCalculationLag()
+    end
+end
 
 -- Включение/выключение лагов
 toggleBtn.MouseButton1Click:Connect(function()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
-        statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
+        statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nIntensity: %s\nFPS: DROPPING", 
+            currentMethod:upper(),
+            lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH")
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        toggleBtn.Text = "LAG OFF"
+        toggleBtn.Text = "EXTREME LAG OFF"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-        print("🚀 LAG ACTIVATED! Method: " .. currentMethod)
+        startCurrentMethod()
+        print("💥 EXTREME LAG ACTIVATED! Method: " .. currentMethod .. " Intensity: " .. lagIntensity)
     else
-        statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
+        statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nIntensity: %s\nFPS: NORMAL", 
+            currentMethod:upper(),
+            lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH")
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        toggleBtn.Text = "LAG ON"
+        toggleBtn.Text = "EXTREME LAG ON"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-        cleanupObjects()
-        print("🛑 Lag stopped")
+        cleanupAll()
+        print("🛑 Extreme lag stopped")
     end
 end)
 
@@ -361,66 +447,52 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
+            statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nIntensity: %s\nFPS: DROPPING", 
+                currentMethod:upper(),
+                lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH")
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-            toggleBtn.Text = "LAG OFF"
+            toggleBtn.Text = "EXTREME LAG OFF"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
+            startCurrentMethod()
         else
-            statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nMode: Safe", currentMethod:upper())
+            statusLabel.Text = string.format("Status: DISABLED\nMethod: %s\nIntensity: %s\nFPS: NORMAL", 
+                currentMethod:upper(),
+                lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH")
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-            toggleBtn.Text = "LAG ON"
+            toggleBtn.Text = "EXTREME LAG ON"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-            cleanupObjects()
+            cleanupAll()
         end
     end
 end)
 
--- ОСНОВНОЙ ЦИКЛ ЛАГОВ
+-- Мониторинг FPS
 spawn(function()
+    local lastTick = tick()
+    local frameCount = 0
+    
     while scriptRunning do
-        if LagEnabled then
-            if currentMethod == "physics" then
-                createPhysicsLag()
-            elseif currentMethod == "parts" then
-                createMassParts()
-            elseif currentMethod == "network" then
-                createNetworkLag()
+        frameCount = frameCount + 1
+        if tick() - lastTick >= 1 then
+            local fps = frameCount
+            frameCount = 0
+            lastTick = tick()
+            
+            if LagEnabled then
+                statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nIntensity: %s\nFPS: %d", 
+                    currentMethod:upper(),
+                    lagIntensity == 1 and "LOW" or lagIntensity == 3 and "MEDIUM" or "HIGH",
+                    fps)
             end
-            
-            -- Добавляем клиентские вычисления
-            updateLoopLag()
-            
-            statusLabel.Text = string.format("Status: ENABLED\nMethod: %s\nActions: %d", currentMethod:upper(), requestCount)
-            
-            -- Большие задержки для безопасности
-            wait(0.5) -- Только 2 действия в секунду
-        else
-            wait(0.5)
         end
+        wait(0.1)
     end
 end)
 
--- Автоматическая очистка каждые 30 секунд
-spawn(function()
-    while scriptRunning do
-        if LagEnabled then
-            cleanupObjects()
-        end
-        wait(30)
-    end
-end)
-
--- Инициализация
-player.CharacterRemoving:Connect(function()
-    if scriptRunning then 
-        cleanupObjects()
-        closeGUI() 
-    end
-end)
-
-print("💥💥💥 ALTERNATIVE LAG METHODS LOADED!")
-print("⚡ Physics mode - Physics calculations")
-print("🔷 Parts mode - Mass part creation") 
-print("🌐 Network mode - Light network requests")
-print("🎮 Click LAG ON or press L to start")
-print("🛡️ All methods are safe and won't get you banned")
+print("💥💥💥 EXTREME CLIENT-SIDE LAG LOADED!")
+print("🎮 Click EXTREME LAG ON or press L to start")
+print("⚡ Render - Intensive rendering calculations")
+print("🔷 Physics - Physics objects with BodyVelocity") 
+print("💡 Lighting - Rapid lighting changes")
+print("🧮 Calculation - Heavy mathematical computations")
+print("🎚️ Adjust intensity for more/less lag")
