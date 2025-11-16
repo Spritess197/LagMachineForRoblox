@@ -1,4 +1,4 @@
--- EXTREME LAG MACHINE
+-- EXTREME LAG MACHINE - L KEY TOGGLE
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -6,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- Настройки
 local LagEnabled = false
-local LagIntensity = 50
+local LagIntensity = 200
 
 -- Создаем GUI
 local screenGui = Instance.new("ScreenGui")
@@ -16,7 +16,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 220)
+mainFrame.Size = UDim2.new(0, 300, 0, 180)
 mainFrame.Position = UDim2.new(0, 400, 0, 20)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainFrame.BackgroundTransparency = 0.1
@@ -86,7 +86,7 @@ intensityCorner.Parent = intensitySection
 local intensityTitle = Instance.new("TextLabel")
 intensityTitle.Size = UDim2.new(1, -10, 0, 25)
 intensityTitle.Position = UDim2.new(0, 10, 0, 5)
-intensityTitle.Text = "Lag Intensity (1-1000)"
+intensityTitle.Text = "Lag Intensity (50-500)"
 intensityTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
 intensityTitle.BackgroundTransparency = 1
 intensityTitle.TextSize = 12
@@ -135,48 +135,32 @@ intensityInputPadding.Parent = intensityInput
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -20, 0, 25)
 statusLabel.Position = UDim2.new(0, 10, 0, 70)
-statusLabel.Text = "Status: DISABLED"
+statusLabel.Text = "Status: DISABLED (Press L)"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
-statusLabel.TextSize = 14
+statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.GothamBold
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 statusLabel.Parent = intensitySection
 
 -- Buttons
 local buttonsFrame = Instance.new("Frame")
-buttonsFrame.Size = UDim2.new(1, 0, 0, 90)
+buttonsFrame.Size = UDim2.new(1, 0, 0, 60)
 buttonsFrame.Position = UDim2.new(0, 0, 0, 90)
 buttonsFrame.BackgroundTransparency = 1
 buttonsFrame.Parent = content
 
--- Enable button
-local enableBtn = Instance.new("TextButton")
-enableBtn.Size = UDim2.new(1, 0, 0, 35)
-enableBtn.Text = "💥 ACTIVATE EXTREME LAG"
-enableBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-enableBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-enableBtn.BorderSizePixel = 0
-enableBtn.TextSize = 14
-enableBtn.Font = Enum.Font.GothamBold
-enableBtn.Parent = buttonsFrame
-
-local enableCorner = Instance.new("UICorner")
-enableCorner.CornerRadius = UDim.new(0, 8)
-enableCorner.Parent = enableBtn
-
--- Warning label
-local warningLabel = Instance.new("TextLabel")
-warningLabel.Size = UDim2.new(1, 0, 0, 40)
-warningLabel.Position = UDim2.new(0, 0, 0, 45)
-warningLabel.Text = "⚠️ WARNING: May crash game!\nUse intensity 100-500 for extreme lag"
-warningLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-warningLabel.BackgroundTransparency = 1
-warningLabel.TextSize = 10
-warningLabel.Font = Enum.Font.Gotham
-warningLabel.TextXAlignment = Enum.TextXAlignment.Center
-warningLabel.TextWrapped = true
-warningLabel.Parent = buttonsFrame
+-- Info label
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 1, 0)
+infoLabel.Text = "Press L to toggle extreme lag\nIntensity 200+ = maximum lag"
+infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextSize = 11
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextXAlignment = Enum.TextXAlignment.Center
+infoLabel.TextWrapped = true
+infoLabel.Parent = buttonsFrame
 
 -- ФУНКЦИОНАЛЬНОСТЬ
 
@@ -185,34 +169,12 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Включение/выключение лагов
-enableBtn.MouseButton1Click:Connect(function()
-    LagEnabled = not LagEnabled
-    
-    if LagEnabled then
-        statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
-        statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-        enableBtn.Text = "🛑 STOP EXTREME LAG"
-        enableBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-        print("💥💥💥 EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
-    else
-        statusLabel.Text = "Status: DISABLED"
-        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        enableBtn.Text = "💥 ACTIVATE EXTREME LAG"
-        enableBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-        print("✅ Extreme lag deactivated")
-    end
-end)
-
 -- Обновление интенсивности
 intensityInput.FocusLost:Connect(function()
     local newIntensity = tonumber(intensityInput.Text)
     if newIntensity and newIntensity > 0 then
-        LagIntensity = math.min(newIntensity, 1000) -- Максимум 1000
+        LagIntensity = math.min(math.max(newIntensity, 50), 500) -- Ограничение 50-500
         intensityInput.Text = tostring(LagIntensity)
-        if LagEnabled then
-            statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
-        end
         print("📊 Lag intensity updated: " .. LagIntensity)
     end
 end)
@@ -245,26 +207,49 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ L
+local function toggleLag()
+    LagEnabled = not LagEnabled
+    
+    if LagEnabled then
+        statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+        print("💥💥💥 EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
+    else
+        statusLabel.Text = "Status: DISABLED (Press L)"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        print("✅ Extreme lag deactivated")
+    end
+end
+
+-- Обработка нажатия клавиши L
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.L then
+        toggleLag()
+    end
+end)
+
 -- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ
 local extremeObjects = {}
 local memoryHogs = {}
-local cpuTasks = {}
 
 local function createMemoryApocalypse()
     if not LagEnabled then return end
     
-    -- Апокалипсис памяти - создаем гигантские структуры данных
+    -- Апокалипсис памяти
     for i = 1, math.floor(LagIntensity / 10) do
         memoryHogs[i] = {
-            data = string.rep("EXTREME_LAG_" .. i, 10000),
+            data = string.rep("EXTREME_LAG_" .. i, 5000),
             nested = {}
         }
-        for j = 1, 1000 do
+        for j = 1, 500 do
             memoryHogs[i].nested[j] = {
-                moreData = string.rep("NESTED_LAG", 1000),
+                moreData = string.rep("NESTED_LAG", 500),
                 numbers = {}
             }
-            for k = 1, 100 do
+            for k = 1, 50 do
                 memoryHogs[i].nested[j].numbers[k] = math.random(1, 1000000)
             end
         end
@@ -274,24 +259,15 @@ end
 local function createCPUArmageddon()
     if not LagEnabled then return end
     
-    -- Армагеддон CPU - максимальная нагрузка на процессор
+    -- Армагеддон CPU
     local computations = 0
     local startTime = tick()
     
-    while tick() - startTime < (LagIntensity / 500) and LagEnabled do
-        -- Супер интенсивные вычисления
-        for i = 1, LagIntensity * 100 do
+    while tick() - startTime < (LagIntensity / 300) and LagEnabled do
+        for i = 1, LagIntensity * 50 do
             local x = math.sin(tick() + i) * math.cos(tick() - i)
             local y = math.tan(x) * math.atan(x)
-            local z = math.log(math.abs(y) + 1) * math.exp(math.abs(x))
-            computations = computations + z
-        end
-        
-        -- Дополнительные тяжелые операции
-        for i = 1, math.floor(LagIntensity / 5) do
-            table.sort(memoryHogs, function(a, b)
-                return #a.data > #b.data
-            end)
+            computations = computations + y
         end
     end
 end
@@ -299,14 +275,14 @@ end
 local function createRenderCataclysm()
     if not LagEnabled then return end
     
-    -- Катаклизм рендеринга - тысячи частиц и эффектов
-    for i = 1, math.floor(LagIntensity / 2) do
+    -- Катаклизм рендеринга
+    for i = 1, math.floor(LagIntensity / 5) do
         local part = Instance.new("Part")
-        part.Size = Vector3.new(0.5, 0.5, 0.5)
+        part.Size = Vector3.new(0.3, 0.3, 0.3)
         part.Position = Vector3.new(
-            math.random(-100, 100),
-            math.random(5, 50), 
-            math.random(-100, 100)
+            math.random(-50, 50),
+            math.random(5, 30), 
+            math.random(-50, 50)
         )
         part.Anchored = false
         part.Material = Enum.Material.Neon
@@ -314,14 +290,9 @@ local function createRenderCataclysm()
         part.Parent = workspace
         
         local fire = Instance.new("Fire")
-        fire.Size = math.random(5, 15)
-        fire.Heat = math.random(5, 15)
+        fire.Size = math.random(3, 10)
+        fire.Heat = math.random(3, 10)
         fire.Parent = part
-        
-        local smoke = Instance.new("Smoke")
-        smoke.Size = math.random(5, 15)
-        smoke.Opacity = 0.5
-        smoke.Parent = part
         
         table.insert(extremeObjects, part)
         
@@ -329,14 +300,14 @@ local function createRenderCataclysm()
         spawn(function()
             while part and part.Parent and LagEnabled do
                 part.RotVelocity = Vector3.new(
-                    math.random(-50, 50),
-                    math.random(-50, 50),
-                    math.random(-50, 50)
+                    math.random(-30, 30),
+                    math.random(-30, 30),
+                    math.random(-30, 30)
                 )
                 part.Velocity = Vector3.new(
-                    math.sin(tick() * 10) * 10,
-                    math.cos(tick() * 8) * 5,
-                    math.cos(tick() * 12) * 10
+                    math.sin(tick() * 5) * 5,
+                    math.cos(tick() * 4) * 3,
+                    math.cos(tick() * 6) * 5
                 )
                 wait(0.01)
             end
@@ -347,41 +318,22 @@ end
 local function createNetworkDoom()
     if not LagEnabled then return end
     
-    -- Сетевой ад - тысячи фиктивных запросов
-    for i = 1, math.floor(LagIntensity / 5) do
+    -- Сетевой ад
+    for i = 1, math.floor(LagIntensity / 10) do
         spawn(function()
-            local requestCount = 0
             while LagEnabled do
-                -- Имитация интенсивной сетевой активности
-                for j = 1, 10 do
+                for j = 1, 5 do
                     spawn(function()
                         local start = tick()
-                        while tick() - start < 0.1 and LagEnabled do
-                            -- Интенсивные операции
+                        while tick() - start < 0.05 and LagEnabled do
                             local data = {}
-                            for k = 1, 100 do
+                            for k = 1, 50 do
                                 data[k] = math.random(1, 1000000)
                             end
                         end
                     end)
                 end
-                requestCount = requestCount + 1
                 wait(0.01)
-            end
-        end)
-    end
-end
-
-local function createInfiniteLoopHell()
-    if not LagEnabled then return end
-    
-    -- Ад бесконечных циклов
-    for i = 1, math.floor(LagIntensity / 20) do
-        spawn(function()
-            local counter = 0
-            while LagEnabled do
-                counter = counter + 1
-                -- Ничего не делаем, просто бесконечный цикл
             end
         end)
     end
@@ -396,10 +348,8 @@ spawn(function()
             createCPUArmageddon() 
             createRenderCataclysm()
             createNetworkDoom()
-            createInfiniteLoopHell()
             
-            -- Короткая пауза между волнами лагов
-            wait(0.05)
+            wait(0.03) -- Очень короткая пауза
         else
             -- Очищаем когда выключено
             for _, obj in pairs(extremeObjects) do
@@ -414,7 +364,7 @@ spawn(function()
     end
 end)
 
-print("💥💥💥 EXTREME LAG MACHINE LOADED!")
-print("📍 Set intensity 100-1000 and click ACTIVATE")
-print("⚠️  WARNING: This will CRASH weak computers!")
-print("💀 Use at your own risk!")
+print("💥 EXTREME LAG MACHINE LOADED!")
+print("🎮 Press L to toggle extreme lag")
+print("📍 Set intensity 200+ for maximum effect")
+print("⚠️  Use intensity 50-500 only!")
