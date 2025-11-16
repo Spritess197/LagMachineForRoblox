@@ -1,14 +1,12 @@
--- EXTREME LAG MACHINE - L KEY TOGGLE (INTENSITY 2000)
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Настройки
 local LagEnabled = false
 local LagIntensity = 500
 
--- Создаем GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ExtremeLagGUI"
 screenGui.ResetOnSpawn = false
@@ -27,7 +25,6 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = mainFrame
 
--- Header
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 40)
 header.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
@@ -49,7 +46,6 @@ title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = header
 
--- Close button
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -35, 0, 5)
@@ -65,14 +61,12 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 8)
 closeCorner.Parent = closeBtn
 
--- Content
 local content = Instance.new("Frame")
 content.Size = UDim2.new(1, -20, 1, -60)
 content.Position = UDim2.new(0, 10, 0, 50)
 content.BackgroundTransparency = 1
 content.Parent = mainFrame
 
--- Intensity section
 local intensitySection = Instance.new("Frame")
 intensitySection.Size = UDim2.new(1, 0, 0, 80)
 intensitySection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
@@ -94,7 +88,6 @@ intensityTitle.Font = Enum.Font.Gotham
 intensityTitle.TextXAlignment = Enum.TextXAlignment.Left
 intensityTitle.Parent = intensitySection
 
--- Intensity input
 local intensityInputContainer = Instance.new("Frame")
 intensityInputContainer.Size = UDim2.new(1, -20, 0, 30)
 intensityInputContainer.Position = UDim2.new(0, 10, 0, 30)
@@ -131,7 +124,6 @@ local intensityInputPadding = Instance.new("UIPadding")
 intensityInputPadding.PaddingLeft = UDim.new(0, 8)
 intensityInputPadding.Parent = intensityInput
 
--- Status
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -20, 0, 25)
 statusLabel.Position = UDim2.new(0, 10, 0, 70)
@@ -143,14 +135,12 @@ statusLabel.Font = Enum.Font.GothamBold
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 statusLabel.Parent = intensitySection
 
--- Buttons
 local buttonsFrame = Instance.new("Frame")
 buttonsFrame.Size = UDim2.new(1, 0, 0, 80)
 buttonsFrame.Position = UDim2.new(0, 0, 0, 90)
 buttonsFrame.BackgroundTransparency = 1
 buttonsFrame.Parent = content
 
--- Info label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 1, 0)
 infoLabel.Text = "Press L to toggle extreme lag\n100-500 = Heavy lag\n500-1000 = Extreme lag\n1000-2000 = CRASH level"
@@ -162,24 +152,19 @@ infoLabel.TextXAlignment = Enum.TextXAlignment.Center
 infoLabel.TextWrapped = true
 infoLabel.Parent = buttonsFrame
 
--- ФУНКЦИОНАЛЬНОСТЬ
-
--- Закрытие GUI
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Обновление интенсивности
 intensityInput.FocusLost:Connect(function()
     local newIntensity = tonumber(intensityInput.Text)
     if newIntensity and newIntensity > 0 then
-        LagIntensity = math.min(newIntensity, 2000) -- Максимум 2000!
+        LagIntensity = math.min(newIntensity, 2000)
         intensityInput.Text = tostring(LagIntensity)
         print("📊 Lag intensity updated: " .. LagIntensity)
     end
 end)
 
--- Перетаскивание
 local dragging = false
 local dragStart, startPos
 
@@ -207,22 +192,20 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ L
 local function toggleLag()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
         statusLabel.Text = "Status: EXTREME LAG! (" .. LagIntensity .. ")"
         statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-        print("💥💥💥 EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
+        print("EXTREME LAG ACTIVATED! Intensity: " .. LagIntensity)
     else
         statusLabel.Text = "Status: DISABLED (Press L)"
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        print("✅ Extreme lag deactivated")
+        print("Extreme lag deactivated")
     end
 end
 
--- Обработка нажатия клавиши L
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
@@ -231,15 +214,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ЭКСТРЕМАЛЬНАЯ СИСТЕМА ЛАГОВ ДО 2000
 local extremeObjects = {}
 local memoryHogs = {}
 local cpuTasks = {}
 
 local function createMemoryApocalypse()
     if not LagEnabled then return end
-    
-    -- Апокалипсис памяти - в 4 раза больше данных
     for i = 1, math.floor(LagIntensity / 5) do
         memoryHogs[i] = {
             data = string.rep("EXTREME_LAG_" .. i, 10000),
@@ -274,8 +254,6 @@ end
 
 local function createCPUArmageddon()
     if not LagEnabled then return end
-    
-    -- Армагеддон CPU - в 4 раза интенсивнее
     local computations = 0
     local startTime = tick()
     
@@ -287,7 +265,6 @@ local function createCPUArmageddon()
             computations = computations + z * math.random(1, 100)
         end
         
-        -- Дополнительные тяжелые операции
         for i = 1, math.floor(LagIntensity / 10) do
             table.sort(memoryHogs, function(a, b)
                 return #a.data > #b.data
@@ -298,8 +275,7 @@ end
 
 local function createRenderCataclysm()
     if not LagEnabled then return end
-    
-    -- Катаклизм рендеринга - в 4 раза больше объектов
+
     for i = 1, math.floor(LagIntensity / 2) do
         local part = Instance.new("Part")
         part.Size = Vector3.new(0.2, 0.2, 0.2)
@@ -332,8 +308,7 @@ local function createRenderCataclysm()
         sparkles.Parent = part
         
         table.insert(extremeObjects, part)
-        
-        -- Безумная анимация x2
+
         spawn(function()
             while part and part.Parent and LagEnabled do
                 part.RotVelocity = Vector3.new(
@@ -355,8 +330,7 @@ end
 
 local function createNetworkDoom()
     if not LagEnabled then return end
-    
-    -- Сетевой ад - в 4 раза больше запросов
+
     for i = 1, math.floor(LagIntensity / 5) do
         spawn(function()
             local requestCount = 0
@@ -385,14 +359,13 @@ end
 
 local function createInfiniteLoopHell()
     if not LagEnabled then return end
-    
-    -- Ад бесконечных циклов - в 4 раза больше
+
     for i = 1, math.floor(LagIntensity / 10) do
         spawn(function()
             local counter = 0
             while LagEnabled do
                 counter = counter + 1
-                -- Бесконечный цикл максимальной интенсивности
+
                 for j = 1, 1000 do
                     local x = math.random(1, 1000000)
                     local y = math.random(1, 1000000)
@@ -403,20 +376,20 @@ local function createInfiniteLoopHell()
     end
 end
 
--- Основной цикл экстремальных лагов
+
 spawn(function()
     while true do
         if LagEnabled then
-            -- Запускаем ВСЕ виды экстремальных лагов ОДНОВРЕМЕННО
+
             createMemoryApocalypse()
             createCPUArmageddon() 
             createRenderCataclysm()
             createNetworkDoom()
             createInfiniteLoopHell()
             
-            wait(0.01) -- Минимальная пауза для максимальной нагрузки
+            wait(0.01) 
         else
-            -- Очищаем когда выключено
+
             for _, obj in pairs(extremeObjects) do
                 if obj and obj.Parent then
                     obj:Destroy()
@@ -430,10 +403,11 @@ spawn(function()
     end
 end)
 
-print("💥💥💥 EXTREME LAG MACHINE 2000 LOADED!")
-print("🎮 Press L to toggle extreme lag")
-print("💀 Intensity levels:")
-print("   100-500 = Heavy lag")
-print("   500-1000 = Extreme lag") 
-print("   1000-2000 = INSTANT CRASH level")
-print("⚠️  WARNING: 1500+ may crash Roblox!")
+print("EXTREME LAG MACHINE 2000 LOADED!")
+print("Press L to toggle extreme lag")
+print("Intensity levels:")
+print("100-500 = Heavy lag")
+print("500-1000 = Extreme lag") 
+print("1000-2000 = INSTANT CRASH level")
+print("WARNING: 1500+ may crash Roblox!")
+
