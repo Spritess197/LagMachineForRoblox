@@ -1,15 +1,15 @@
--- ULTRA FAST MULTI-RESET SCRIPT
+-- PROPER ULTRA FAST RESPAWN SCRIPT
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 
 -- Настройки
-local MultiResetEnabled = false
-local resetCount = 0
+local RespawnEnabled = false
+local respawnCount = 0
 
 -- Создаем простой GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "UltraResetGUI"
+screenGui.Name = "UltraRespawnGUI"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -40,7 +40,7 @@ headerCorner.Parent = header
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.7, 0, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
-title.Text = "ULTRA FAST RESET"
+title.Text = "ULTRA RESPAWN"
 title.TextColor3 = Color3.fromRGB(220, 220, 220)
 title.BackgroundTransparency = 1
 title.TextSize = 14
@@ -86,7 +86,7 @@ statusLabel.Parent = content
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 0, 40)
 infoLabel.Position = UDim2.new(0, 0, 0, 25)
-infoLabel.Text = "⚡ 10+ resets per second\n🎮 Press R to toggle\n♾️ Infinite until disabled"
+infoLabel.Text = "⚡ Proper respawn system\n🎮 Press R to toggle\n♾️ Respawns infinitely"
 infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextSize = 10
@@ -131,19 +131,22 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПО КНОПКЕ R
-local function toggleMultiReset()
-    MultiResetEnabled = not MultiResetEnabled
+local function toggleRespawn()
+    RespawnEnabled = not RespawnEnabled
     
-    if MultiResetEnabled then
-        statusLabel.Text = "Status: ULTRA FAST RESET!"
+    if RespawnEnabled then
+        statusLabel.Text = "Status: ULTRA RESPAWN!"
         statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
-        print("⚡⚡⚡ ULTRA FAST MULTI-RESET ACTIVATED!")
+        print("⚡⚡⚡ ULTRA RESPAWN ACTIVATED!")
         print("🎮 Press R again to stop")
+        
+        -- Немедленно запускаем первый респавн
+        LocalPlayer:LoadCharacter()
     else
         statusLabel.Text = "Status: DISABLED (Press R)"
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        print("🛑 Ultra fast reset stopped")
-        print("📊 Total resets: " .. resetCount)
+        print("🛑 Ultra respawn stopped")
+        print("📊 Total respawns: " .. respawnCount)
     end
 end
 
@@ -152,115 +155,123 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
     if input.KeyCode == Enum.KeyCode.R then
-        toggleMultiReset()
+        toggleRespawn()
     end
 end)
 
--- СИСТЕМА СУПЕР-БЫСТРОГО МНОГОКРАТНОГО РЕСЕТА
-local resetActive = false
+-- ПРАВИЛЬНАЯ СИСТЕМА РЕСПАВНА
+local respawnActive = false
 
-local function ultraFastMultiReset()
-    if not MultiResetEnabled or resetActive then return end
+local function properUltraRespawn()
+    if not RespawnEnabled or respawnActive then return end
     
-    resetActive = true
+    respawnActive = true
     local cycleCount = 0
     
-    print("🚀 STARTING ULTRA FAST MULTI-RESET...")
+    print("🚀 STARTING PROPER ULTRA RESPAWN...")
     
-    while MultiResetEnabled do
+    while RespawnEnabled do
         cycleCount = cycleCount + 1
         
-        -- ЦИКЛ ИЗ 10 МГНОВЕННЫХ РЕСЕТОВ ПОДРЯД
-        for i = 1, 10 do
-            -- Ресет №1
-            if LocalPlayer.Character then
-                LocalPlayer.Character:BreakJoints()
-            end
+        -- Ждем пока появится персонаж
+        if not LocalPlayer.Character then
             LocalPlayer:LoadCharacter()
-            resetCount = resetCount + 1
-            
-            -- Мгновенный ресет №2
-            wait(0.0001)
-            if LocalPlayer.Character then
-                LocalPlayer.Character:BreakJoints()
-            end
-            LocalPlayer:LoadCharacter()
-            resetCount = resetCount + 1
-            
-            -- Мгновенный ресет №3
-            wait(0.0001)
-            if LocalPlayer.Character then
-                LocalPlayer.Character:BreakJoints()
-            end
-            LocalPlayer:LoadCharacter()
-            resetCount = resetCount + 1
-            
-            -- Мгновенный ресет №4
-            wait(0.0001)
-            if LocalPlayer.Character then
-                LocalPlayer.Character:BreakJoints()
-            end
-            LocalPlayer:LoadCharacter()
-            resetCount = resetCount + 1
-            
-            -- Мгновенный ресет №5
-            wait(0.0001)
-            if LocalPlayer.Character then
-                LocalPlayer.Character:BreakJoints()
-            end
-            LocalPlayer:LoadCharacter()
-            resetCount = resetCount + 1
+            respawnCount = respawnCount + 1
+            wait(0.1) -- Ждем загрузки персонажа
         end
         
-        -- Выводим статистику каждые 5 циклов
-        if cycleCount % 5 == 0 then
-            print("⚡ ULTRA RESET CYCLE #" .. cycleCount .. " - Total: " .. resetCount .. " resets")
-            print("🚀 Speed: 50+ resets per cycle!")
+        -- Если персонаж есть - убиваем и респавним
+        if LocalPlayer.Character then
+            -- Способ 1: Официальный респавн (самый надежный)
+            LocalPlayer:LoadCharacter()
+            respawnCount = respawnCount + 1
+            
+            -- Ждем немного перед следующим респавном
+            wait(0.05)
+            
+            -- Дополнительный быстрый респавн
+            LocalPlayer:LoadCharacter()
+            respawnCount = respawnCount + 1
+            
+            wait(0.05)
+            
+            -- Еще один респавн
+            LocalPlayer:LoadCharacter()
+            respawnCount = respawnCount + 1
         end
         
-        -- Минимальная пауза между циклами
-        wait(0.01)
+        -- Выводим статистику
+        if cycleCount % 10 == 0 then
+            print("⚡ RESPAWN CYCLE #" .. cycleCount .. " - Total: " .. respawnCount .. " respawns")
+        end
+        
+        wait(0.1) -- Пауза между циклами
     end
     
-    resetActive = false
-    print("🛑 ULTRA FAST MULTI-RESET STOPPED")
+    respawnActive = false
+    print("🛑 PROPER ULTRA RESPAWN STOPPED")
 end
 
--- ДОПОЛНИТЕЛЬНЫЙ СУПЕР-БЫСТРЫЙ ЦИКЛ
-local ultraResetActive = false
+-- ДОПОЛНИТЕЛЬНАЯ СИСТЕМА ДЛЯ МАКСИМАЛЬНОЙ СКОРОСТИ
+local fastRespawnActive = false
 
-local function additionalUltraReset()
-    if not MultiResetEnabled or ultraResetActive then return end
+local function fastRespawnLoop()
+    if not RespawnEnabled or fastRespawnActive then return end
     
-    ultraResetActive = true
+    fastRespawnActive = true
     
-    while MultiResetEnabled do
-        -- Дополнительные мгновенные ресеты
-        for i = 1, 5 do
-            if LocalPlayer.Character then
-                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid and humanoid.Health > 0 then
-                    humanoid.Health = 0
-                    resetCount = resetCount + 1
-                else
-                    LocalPlayer.Character:BreakJoints()
-                    resetCount = resetCount + 1
-                end
-            end
-            wait(0.0001)
-        end
+    while RespawnEnabled do
+        -- Используем только LoadCharacter() - самый надежный метод
+        LocalPlayer:LoadCharacter()
+        respawnCount = respawnCount + 1
         
-        wait(0.02)
+        -- Очень короткая задержка
+        wait(0.08)
+        
+        -- Еще один быстрый респавн
+        LocalPlayer:LoadCharacter()
+        respawnCount = respawnCount + 1
+        
+        wait(0.08)
     end
     
-    ultraResetActive = false
+    fastRespawnActive = false
 end
 
--- Запускаем системы
+-- СИСТЕМА СЛЕДЕНИЯ ЗА СОСТОЯНИЕМ ПЕРСОНАЖА
+local monitorActive = false
+
+local function monitorCharacter()
+    if not RespawnEnabled or monitorActive then return end
+    
+    monitorActive = true
+    
+    while RespawnEnabled do
+        -- Если персонажа нет - создаем
+        if not LocalPlayer.Character then
+            LocalPlayer:LoadCharacter()
+            respawnCount = respawnCount + 1
+            print("🔁 Character missing - respawning")
+        end
+        
+        -- Если персонаж "сломан" (нет Humanoid) - респавним
+        if LocalPlayer.Character and not LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer:LoadCharacter()
+            respawnCount = respawnCount + 1
+            print("🔧 Broken character - respawning")
+        end
+        
+        wait(0.2)
+    end
+    
+    monitorActive = false
+end
+
+-- Запускаем все системы
 spawn(function()
     while true do
-        if MultiResetEnabled and not resetActive then
-            ultraFastMultiReset()
+        if RespawnEnabled and not respawnActive then
+            properUltraRespawn()
         end
         wait(0.1)
     end
@@ -268,14 +279,24 @@ end)
 
 spawn(function()
     while true do
-        if MultiResetEnabled and not ultraResetActive then
-            additionalUltraReset()
+        if RespawnEnabled and not fastRespawnActive then
+            fastRespawnLoop()
         end
         wait(0.1)
     end
 end)
 
-print("⚡⚡⚡ ULTRA FAST MULTI-RESET SCRIPT LOADED!")
-print("🎮 Press R to start/stop ultra fast reset")
-print("🚀 50+ resets per second!")
-print("♾️ Will reset infinitely until you press R again!")
+spawn(function()
+    while true do
+        if RespawnEnabled and not monitorActive then
+            monitorCharacter()
+        end
+        wait(0.1)
+    end
+end)
+
+print("⚡⚡⚡ PROPER ULTRA RESPAWN SCRIPT LOADED!")
+print("🎮 Press R to start/stop ultra respawn")
+print("🔧 Uses proper LoadCharacter() method")
+print("🚀 10-15 respawns per second!")
+print("♾️ Will respawn infinitely until you press R again!")
